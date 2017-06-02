@@ -1,6 +1,6 @@
 #!/bin/bash 
 
-source $1
+. $1
 
 BASE=$PWD
 

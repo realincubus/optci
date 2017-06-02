@@ -113,6 +113,7 @@ int main(int argc, char** argv){
   root.print();
 
   std::vector<std::string> paths;
+  paths.push_back("source_optci");
   root.execute(paths);
 
 

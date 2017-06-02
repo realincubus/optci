@@ -1,6 +1,0 @@
-#!/bin/bash
-
-echo "switch turbo boost off"
-echo "clear the memory"
-echo "wait for load to readuce to near 0"
-echo "wait for network load to reduce to near 0"
