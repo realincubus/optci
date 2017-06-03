@@ -1,5 +1,5 @@
-#!/bin/bash
+#!/bin/bash -xe
 
 cd optci_example_matrix
-./bin_matrix_multiply_example
+./bin_matrix_multiply_example $SIZE
 

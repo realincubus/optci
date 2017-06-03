@@ -1,2 +1,3 @@
 #!/bin/bash 
+rm -rf optci_example_matrix
 git clone https://github.com/realincubus/optci_example_matrix.git

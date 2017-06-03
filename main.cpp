@@ -8,6 +8,10 @@
 using namespace std::experimental::filesystem;
 using namespace std;
 
+void run_script ( std::string fname ) {
+  system ( ("./run_wrapper.sh " + fname).c_str() );
+}
+
 struct Phase {
   Phase( std::string phase_name ) :
     name(phase_name ) 
@@ -29,7 +33,7 @@ struct Phase {
 
   void execute ( ) {
     if ( sub_phases.empty() ) {
-      system( name.c_str() );
+      run_script( name.c_str() );
     }
     for( auto& sub_phase : sub_phases ){
       sub_phase.execute();
