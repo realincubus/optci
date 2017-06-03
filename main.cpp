@@ -3,14 +3,11 @@
 #include <experimental/filesystem>
 #include <iostream>
 #include <algorithm>
+#include <fstream>
 #include <unistd.h>
 
 using namespace std::experimental::filesystem;
 using namespace std;
-
-void run_script ( std::string fname ) {
-  system ( ("./run_wrapper.sh " + fname).c_str() );
-}
 
 struct Phase {
   Phase( std::string phase_name ) :
@@ -31,17 +28,50 @@ struct Phase {
     
   }
 
-  void execute ( ) {
+  void execute (std::vector<std::string>& paths) {
     if ( sub_phases.empty() ) {
-      run_script( name.c_str() );
+      run_command( paths, name );
     }
+  
+    parse_artifacts( paths, "artifacts/"s+ name );
+
     for( auto& sub_phase : sub_phases ){
-      sub_phase.execute();
+      sub_phase.execute(paths);
     }
   }
 
-  std::string name;
   std::vector<Phase> sub_phases;
+
+private:
+  void parse_artifacts(std::vector<std::string>& paths, std::string folder){
+    if ( !exists( folder ) ) return;
+    for( auto& p : directory_iterator(folder) ){
+      if ( is_directory( p ) ) {
+	parse_artifacts( paths, p.path() );
+      }
+      if ( is_regular_file( p ) ) {
+	paths.push_back( p.path() );
+	std::cout << "added " << p << " to the list of files to source" << std::endl;
+      }
+    }
+  }
+
+  void run_command( std::vector<std::string>& paths, std::string command ) {
+    ofstream out( "source.this" );
+
+    // build source file
+    for( auto& path : paths ){
+      ifstream in( path );
+      std::string line;
+      while( getline( in, line ) )  {
+	out << line << endl;
+      }
+    }
+    
+    system( ("./run_wrapper.sh "s + "source.this"s + " "s + command).c_str() ) ;
+  }
+  std::string name;
+  std::vector<std::string> artifacts;
 };
 
 
@@ -82,7 +112,9 @@ int main(int argc, char** argv){
 
   root.print();
 
-  root.execute();
+  std::vector<std::string> paths;
+  paths.push_back("source_optci");
+  root.execute(paths);
 
 
   return 0;

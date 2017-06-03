@@ -1,5 +1,0 @@
-#!/bin/bash -xe
-
-cd optci_example_matrix
-./bin_matrix_multiply_example $SIZE
-

@@ -1,3 +1,2 @@
-#!/bin/bash
-cd optci_example_matrix
+#!/bin/bash -xe
 cmake .

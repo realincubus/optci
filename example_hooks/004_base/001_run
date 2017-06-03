@@ -1,0 +1,6 @@
+#!/bin/bash
+OPTCI_PREPARE
+
+./bin_matrix_multiply_example 1000
+
+OPTCI_CLEANUP
