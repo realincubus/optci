@@ -1,0 +1,12 @@
+#!/bin/bash
+function OPTCI_PREPARE {
+echo "prepare run here"
+}
+
+export -f OPTCI_PREPARE
+
+function OPTCI_CLEANUP {
+echo "restore env setups"
+}
+
+export -f OPTCI_CLEANUP
