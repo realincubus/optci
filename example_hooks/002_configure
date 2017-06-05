@@ -1,2 +1,5 @@
 #!/bin/bash -xe
 cmake .
+
+echo 'export SIZE=1000' > $ARTIFACT/a1
+echo 'export ITERATIONS=10000' >> $ARTIFACT/a1

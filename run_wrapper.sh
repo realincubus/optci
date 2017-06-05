@@ -10,4 +10,7 @@ else
   cd $CHECKOUT_FOLDER
 fi
 
+export ARTIFACT=$BASE/artifacts/$2
+mkdir -p $ARTIFACT
+
 $BASE/$2

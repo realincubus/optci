@@ -1,6 +1,5 @@
-#!/bin/bash 
+#!/bin/bash  -xe
 rm -rf optci_example_matrix
 git clone https://github.com/realincubus/optci_example_matrix.git
 
-mkdir -p artifacts/example_hooks/001_configure
-echo 'export CHECKOUT_FOLDER=optci_example_matrix' > artifacts/example_hooks/001_configure/test
+echo 'export CHECKOUT_FOLDER=optci_example_matrix' > $ARTIFACT/a1

@@ -112,6 +112,9 @@ int main(int argc, char** argv){
 
   root.print();
 
+  remove_all( "artifacts" );
+  remove( "source.this" );
+
   std::vector<std::string> paths;
   paths.push_back("source_optci");
   root.execute(paths);

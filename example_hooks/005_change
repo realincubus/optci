@@ -2,5 +2,4 @@
 
 echo "change the code here"
 
-cd optci_example_matrix 
 git apply ../opt.patch
