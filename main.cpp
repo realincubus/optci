@@ -9,6 +9,9 @@
 using namespace std::experimental::filesystem;
 using namespace std;
 
+// TODO remove global var
+path g_base_dir;
+
 struct Phase {
   Phase( std::string phase_name ) :
     name(phase_name ) 
@@ -68,7 +71,7 @@ private:
       }
     }
     
-    system( ("./run_wrapper.sh "s + "source.this"s + " "s + command).c_str() ) ;
+    system( (g_base_dir.string() + "run_wrapper.sh "s + "source.this"s + " "s + command).c_str() ) ;
   }
   std::string name;
   std::vector<std::string> artifacts;
@@ -103,6 +106,12 @@ void parse_folder( std::vector<Phase>& phases, std::string folder ) {
 
 int main(int argc, char** argv){
 
+   path p = argv[0];
+
+   auto install_dir = canonical(p).remove_filename();
+   std::cout << "install_dir " << install_dir << std::endl;
+   g_base_dir = install_dir;
+
   // TODO add sanity check
   std::string hook_folder = argv[1];
 
@@ -112,11 +121,20 @@ int main(int argc, char** argv){
 
   root.print();
 
-  remove_all( "artifacts" );
-  remove( "source.this" );
+  try {
+    remove_all( "artifacts" );
+  }catch (...){
+    std::cout << "nothing to remove" << std::endl;
+  }
+
+  try {
+    remove( "source.this" );
+  }catch (...){
+    std::cout << "nothing to remove" << std::endl;
+  }
 
   std::vector<std::string> paths;
-  paths.push_back("source_optci");
+  paths.push_back(g_base_dir.string() + "source_optci");
   root.execute(paths);
 
 
