@@ -1,6 +1,76 @@
 #!/bin/bash
+
+function check_network_load {
+  echo "check network load"
+
+  MAX_PACKETS=100
+
+  interfaces=$(cd /sys/class/net; find . -maxdepth 1 | awk -F "./" '{print $2}' )
+  echo "interfaces $interfaces"
+
+  load_ok="0"
+  declare -a begin_rx
+  declare -a begin_tx
+
+  declare -a end_rx
+  declare -a end_tx
+
+  while [[ $load_ok == "0" ]]; do
+
+    load_ok="1"
+
+    ctr=0
+    for interface in $interfaces; do
+      echo "interface $interface"
+      begin_rx[ctr]=$(cat /sys/class/net/$interface/statistics/rx_packets)
+      ctr=$((ctr+1))  
+    done
+
+    sleep 2
+
+    ctr=0
+    for interface in $interfaces; do
+      echo "interface $interface"
+      end_rx[ctr]=$(cat /sys/class/net/$interface/statistics/rx_packets)
+      echo begin_rx $begin_rx[$interface] end_rx $end_rx[$interface]  
+
+      echo "${end_rx[$ctr]} - ${begin_rx[$ctr]} > $MAX_PACKETS"
+      load=$(echo "${end_rx[$ctr]} - ${begin_rx[$ctr]} > $MAX_PACKETS" | bc -l)
+
+      echo "load $load"
+      if [[ $load == "1" ]]; then
+        load_ok="0"
+        echo "network load is still to high"
+      fi
+      ctr=$((ctr+1))  
+    done
+  
+  done
+
+  echo "network load is ok"
+}
+
+function check_system_load {
+  echo "check system load"
+
+  MAX_LOAD_1="0.05"
+  load_ok="0"
+
+  while [[ $load_ok == "0" ]]; do
+    load_1=$(cat /proc/loadavg | awk '{ print $1 }')
+    load_ok=$(echo $load_1'<'$MAX_LOAD_1 | bc -l)
+    if [[ $load_ok == "0" ]]; then
+      echo "waiting till load 1($load_1) decreases to $MAX_LOAD_1"
+    fi
+    sleep 1
+  done
+}
+
 function OPTCI_PREPARE {
-echo "prepare run here"
+
+  check_network_load
+
+  check_system_load
 }
 
 export -f OPTCI_PREPARE
