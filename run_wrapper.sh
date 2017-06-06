@@ -11,6 +11,9 @@ else
 fi
 
 export ARTIFACT=$BASE/artifacts/$2
+export FILES=$3
+
+
 mkdir -p $ARTIFACT
 
 $BASE/$2

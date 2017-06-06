@@ -2,4 +2,4 @@
 
 echo "change the code here"
 
-git apply ../opt.patch
+git apply $FILES/opt.patch

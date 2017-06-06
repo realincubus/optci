@@ -11,6 +11,7 @@ using namespace std;
 
 // TODO remove global var
 path g_base_dir;
+std::string g_files_folder;
 
 struct Phase {
   Phase( std::string phase_name ) :
@@ -71,7 +72,7 @@ private:
       }
     }
     
-    system( (g_base_dir.string() + "run_wrapper.sh "s + "source.this"s + " "s + command).c_str() ) ;
+    system( (g_base_dir.string() + "run_wrapper.sh "s + "source.this"s + " "s + command + " "s + g_files_folder).c_str() ) ;
   }
   std::string name;
   std::vector<std::string> artifacts;
@@ -113,11 +114,16 @@ int main(int argc, char** argv){
    g_base_dir = install_dir;
 
   // TODO add sanity check
-  std::string hook_folder = argv[1];
+  path hook_folder = argv[1];
+  path phases_folder = hook_folder / "phases";
+  path files_folder = hook_folder / "files";
 
-  Phase root( hook_folder );
+  // TODO remove 
+  g_files_folder = canonical(files_folder);
 
-  parse_folder( root.sub_phases, hook_folder );
+  Phase root( phases_folder );
+
+  parse_folder( root.sub_phases, phases_folder );
 
   root.print();
 

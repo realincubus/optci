@@ -1,0 +1,4 @@
+#!/bin/bash -xe
+
+./bin_matrix_multiply_example $SIZE $ITERATIONS
+
