@@ -1,5 +1,7 @@
 #!/bin/bash
 
+
+# TODO add tx !!!!!!
 function check_network_load {
   echo "check network load"
 
@@ -58,7 +60,7 @@ function check_system_load {
 
   while [[ $load_ok == "0" ]]; do
     load_1=$(cat /proc/loadavg | awk '{ print $1 }')
-    load_ok=$(echo $load_1'<'$MAX_LOAD_1 | bc -l)
+    load_ok=$(echo $load_1'<='$MAX_LOAD_1 | bc -l)
     if [[ $load_ok == "0" ]]; then
       echo "waiting till load 1($load_1) decreases to $MAX_LOAD_1"
     fi
@@ -66,17 +68,115 @@ function check_system_load {
   done
 }
 
+function check_disk_load {
+  MAX_BYTES=100
+
+  disks=$(cd /sys/block/; find . -maxdepth 1 | awk -F "./" '{print $2}' )
+  #echo "disks $disks"
+
+  load_ok="0"
+  declare -a begin_read
+  declare -a begin_write
+
+  declare -a end_read
+  declare -a end_write
+
+  while [[ $load_ok == "0" ]]; do
+
+    load_ok="1"
+
+    ctr=0
+    for disk in $disks; do
+      #echo "disk $disk"
+      begin_read[ctr]=$(cat /sys/block/$disk/stat | awk '{ print $1 }')
+      begin_write[ctr]=$(cat /sys/block/$disk/stat | awk '{ print $5 }')
+      ctr=$((ctr+1))  
+    done
+
+    sleep 2
+
+    ctr=0
+    for disk in $disks; do
+      end_read[ctr]=$(cat /sys/block/$disk/stat | awk '{print $1}')
+      end_write[ctr]=$(cat /sys/block/$disk/stat | awk '{ print $5 }')
+      #echo begin_read $begin_read[$disk] end_read $end_read[$disk]  
+      #echo begin_write $begin_write[$disk] end_read $end_write[$disk]  
+
+      #echo "${end_read[$ctr]} - ${begin_read[$ctr]} > $MAX_BYTES"
+      read_load=$(echo "${end_read[$ctr]} - ${begin_read[$ctr]} > $MAX_BYTES" | bc -l)
+
+      if [[ $read_load == "1" ]]; then
+        load_ok="0"
+        ios=$(echo "${end_read[$ctr]} - ${begin_read[$ctr]}" | bc)
+        echo "disk read load is still to high. read i/os $ios"
+      fi
+
+      #echo "${end_write[$ctr]} - ${begin_write[$ctr]} > $MAX_BYTES"
+      write_load=$(echo "${end_write[$ctr]} - ${begin_write[$ctr]} > $MAX_BYTES" | bc -l)
+
+      if [[ $write_load == "1" ]]; then
+        load_ok="0"
+        ios=$(echo "${end_write[$ctr]} - ${begin_write[$ctr]}" | bc)
+        echo "disk write load is still to high. write i/os $ios"
+      fi
+
+      echo "disk $disk $read_load $write_load"
+
+      ctr=$((ctr+1))  
+    done
+  
+  done
+}
+
+function disable_turbo_boost {
+  echo "disabling turbo boost"
+  # check for intel_pstate
+  if [[ ! -e /sys/devices/system/cpu/intel_pstate/no_turbo ]]; then
+    echo "can not disable turbo boost"
+  fi
+  echo "1" > /sys/devices/system/cpu/intel_pstate/no_turbo
+}
+
+function enable_turbo_boost {
+  echo "enabling turbo boost"
+  # check for intel_pstate
+  if [[ ! -e /sys/devices/system/cpu/intel_pstate/no_turbo ]]; then
+    echo "can not enable turbo boost"
+  fi
+  echo "0" > /sys/devices/system/cpu/intel_pstate/no_turbo
+}
+
+function clear_memory {
+  echo "clearing memory not implemented right now"
+
+}
+
 function OPTCI_PREPARE {
 
-  check_network_load
+  clear_memory
+  disable_turbo_boost
 
+  check_disk_load
+  check_network_load
   check_system_load
 }
 
 export -f OPTCI_PREPARE
 
 function OPTCI_CLEANUP {
-echo "restore env setups"
+  echo "restore env setups"
+
+  enable_turbo_boost
+
 }
 
 export -f OPTCI_CLEANUP
+
+
+
+
+
+
+
+
+
