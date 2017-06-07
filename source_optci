@@ -52,10 +52,12 @@ function check_network_load {
   echo "network load is ok"
 }
 
+export -f check_network_load
+
 function check_system_load {
   echo "check system load"
 
-  MAX_LOAD_1="0.05"
+  MAX_LOAD_1="0.10"
   load_ok="0"
 
   while [[ $load_ok == "0" ]]; do
@@ -67,6 +69,8 @@ function check_system_load {
     sleep 1
   done
 }
+
+export -f check_system_load
 
 function check_disk_load {
   MAX_BYTES=100
@@ -128,6 +132,8 @@ function check_disk_load {
   done
 }
 
+export -f check_disk_load
+
 function disable_turbo_boost {
   echo "disabling turbo boost"
   # check for intel_pstate
@@ -136,6 +142,9 @@ function disable_turbo_boost {
   fi
   echo "1" > /sys/devices/system/cpu/intel_pstate/no_turbo
 }
+
+
+export -f disable_turbo_boost
 
 function enable_turbo_boost {
   echo "enabling turbo boost"
@@ -146,10 +155,13 @@ function enable_turbo_boost {
   echo "0" > /sys/devices/system/cpu/intel_pstate/no_turbo
 }
 
+export -f enable_turbo_boost
+
 function clear_memory {
   echo "clearing memory not implemented right now"
 
 }
+export -f clear_memory
 
 function OPTCI_PREPARE {
 
