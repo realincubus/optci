@@ -73,6 +73,9 @@ function check_system_load {
 export -f check_system_load
 
 function check_disk_load {
+
+  sync
+
   MAX_BYTES=100
 
   disks=$(cd /sys/block/; find . -maxdepth 1 | awk -F "./" '{print $2}' )
