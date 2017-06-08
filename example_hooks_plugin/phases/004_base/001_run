@@ -1,0 +1,8 @@
+#!/bin/bash
+OPTCI_PREPARE
+
+time="$(OPTCI_RUN ./bin_matrix_multiply_example $SIZE $ITERATIONS)"
+
+echo "export BASE_RUNTIME=$time" > $ARTIFACT/base_runtime
+
+OPTCI_CLEANUP

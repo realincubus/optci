@@ -1,0 +1,27 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f2640e2..048d0f5 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -3,7 +3,7 @@ PROJECT(matrix_multiply_example)
+ 
+ SET( CMAKE_BUILD_TYPE RELEASE )
+ 
+-SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y" )
++SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y -fopenmp" )
+ SET( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -pedantic -DGLIBCXX_DEBUG" )
+ SET( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}" )
+ 
+diff --git a/main.cpp b/main.cpp
+index 848d385..c4589df 100644
+--- a/main.cpp
++++ b/main.cpp
+@@ -25,7 +25,9 @@ int main(int argc, char** argv){
+ 
+   auto start = std::chrono::high_resolution_clock::now();
+ 
++#pragma omp parallel
+   for( int iterations = 0; iterations < max_iterations ; iterations++ ) {
++#pragma omp for
+     for ( int y = 0; y < Y; y++ ){
+       for ( int x = 0; x < X; x++ ) { 
+         targetVector[y] += matrix[x+y*X] * inputVector[x];
