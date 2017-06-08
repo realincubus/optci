@@ -174,7 +174,7 @@ function OPTCI_PREPARE {
 
   check_disk_load
   check_network_load
-  check_system_load
+  #check_system_load
 }
 
 export -f OPTCI_PREPARE
@@ -191,10 +191,11 @@ export -f OPTCI_CLEANUP
 
 function  OPTCI_RUN {
   START=$(date +%s.%N)
-  "$@"
+  # TODO change if needed to a file specified by the user
+  "$@" > /dev/null
   END=$(date +%s.%N)
   DIFF=$(echo "$END - $START" | bc)
-  echo "time to run $@ $DIFF s"
+  echo "$DIFF"
 }
 
 export -f OPTCI_RUN
