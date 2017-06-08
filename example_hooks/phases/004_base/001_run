@@ -1,6 +1,6 @@
 #!/bin/bash
 OPTCI_PREPARE
 
-./bin_matrix_multiply_example $SIZE $ITERATIONS
+OPTCI_RUN ./bin_matrix_multiply_example $SIZE $ITERATIONS
 
 OPTCI_CLEANUP

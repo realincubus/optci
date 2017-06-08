@@ -189,8 +189,15 @@ function OPTCI_CLEANUP {
 
 export -f OPTCI_CLEANUP
 
+function  OPTCI_RUN {
+  START=$(date +%s.%N)
+  "$@"
+  END=$(date +%s.%N)
+  DIFF=$(echo "$END - $START" | bc)
+  echo "time to run $@ $DIFF s"
+}
 
-
+export -f OPTCI_RUN
 
 
 
