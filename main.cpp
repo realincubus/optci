@@ -6,6 +6,8 @@
 #include <fstream>
 #include <unistd.h>
 
+#include "ConfigurationMatrix.hpp"
+
 using namespace std::experimental::filesystem;
 using namespace std;
 
@@ -34,7 +36,14 @@ struct Phase {
 
   void execute (std::vector<std::string>& paths) {
     if ( sub_phases.empty() ) {
-      run_command( paths, name );
+      if ( matrix ) {
+        matrix->for_each_configuration( [&](auto a){ 
+            run_command( paths, name );
+          }
+        );
+      }else{
+        run_command( paths, name );
+      }
     }
   
     parse_artifacts( paths, "artifacts/"s+ name );
@@ -45,6 +54,14 @@ struct Phase {
   }
 
   std::vector<Phase> sub_phases;
+
+  auto get_name() {
+      return name;
+  }
+
+  auto set_run_configuration( ConfigurationMatrix& m) {
+    matrix = new ConfigurationMatrix(m);
+  }
 
 private:
   void parse_artifacts(std::vector<std::string>& paths, std::string folder){
@@ -74,8 +91,11 @@ private:
     
     system( (g_base_dir.string() + "run_wrapper.sh "s + "source.this"s + " "s + command + " "s + g_files_folder).c_str() ) ;
   }
+
+
   std::string name;
   std::vector<std::string> artifacts;
+  ConfigurationMatrix* matrix = nullptr;
 };
 
 
@@ -105,6 +125,35 @@ void parse_folder( std::vector<Phase>& phases, std::string folder ) {
 }
 
 
+
+
+void add_config_information( Phase& phase ) {
+
+  if ( phase.get_name() == "004_base/001_run" ) {
+    // get this information from hwloc
+    ConfigurationMatrix m;
+    Axis cores("CORES");
+    cores.add_value("1");
+    cores.add_value("2");
+    cores.add_value("4");
+    cores.add_value("8");
+
+    Axis sockets("SOCKETS");
+    sockets.add_value("0");
+    sockets.add_value("0-1");
+
+    m.add_axis(sockets);
+    m.add_axis(cores);
+
+    phase.set_run_configuration(m); 
+  }
+
+  for( auto&& element : phase.sub_phases ){
+      add_config_information( element );
+  }
+  
+}
+
 int main(int argc, char** argv){
 
    path p = argv[0];
@@ -124,6 +173,8 @@ int main(int argc, char** argv){
   Phase root( phases_folder );
 
   parse_folder( root.sub_phases, phases_folder );
+
+  add_config_information( root );
 
   root.print();
 

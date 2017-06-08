@@ -19,3 +19,7 @@ ADD_EXECUTABLE(bin_optci main.cpp)
 
 TARGET_LINK_LIBRARIES( bin_optci stdc++fs )
 
+ADD_EXECUTABLE(configuration_matrix_test ConfigurationMatrixTest.cpp)
+
+TARGET_LINK_LIBRARIES( configuration_matrix_test  gtest gtest_main )
+
