@@ -170,6 +170,7 @@ function OPTCI_PREPARE {
 
   clear_memory
   disable_turbo_boost
+  governor_set_performance
 
   check_disk_load
   check_network_load
@@ -182,6 +183,7 @@ function OPTCI_CLEANUP {
   echo "restore env setups"
 
   enable_turbo_boost
+  governor_set_powersave
 
 }
 
