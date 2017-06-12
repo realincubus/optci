@@ -1,0 +1,9 @@
+#!/bin/bash
+OPTCI_PREPARE
+
+time=$(OPTCI_RUN perf record -F 99 -g ./bin_matrix_multiply_example $SIZE $ITERATIONS)
+
+echo "export CHANGED_RUNTIME=$time" > $ARTIFACT/changed_runtime
+mv perf.data perf.data.changed
+
+OPTCI_CLEANUP
