@@ -1,0 +1,30 @@
+#!/bin/bash
+
+echo "change the code here"
+
+# TODO this needs to be infered somehow
+PLUGIN_PATH=/root/ClanPlugin/lib/ClanPlugin.so 
+
+FIXIT_COMPILER=clang
+FIXIT_COMPILER_FLAGS="-std=c++14 -g -fsyntax-only"
+PLUGIN_FLAGS="$FIXIT_COMPILER_FLAGS -Xclang -load -Xclang $PLUGIN_PATH -Xclang -add-plugin -Xclang clan -Xclang -plugin-arg-clan -Xclang -write-cloog-file -Xclang -plugin-arg-clan -Xclang"
+
+OMP_FIXER_FLAGS="$PLUGIN_FLAGS -emit-openmp"
+FIXIT_FLAGS="-Xclang -fixit=opt"
+
+SOURCE=main.cpp
+
+OMP_FIXIT_COMMAND="$FIXIT_COMPILER $OMP_FIXER_FLAGS $FIXIT_COMPILER_FLAGS $FIXIT_FLAGS -c $SOURCE"
+
+echo running $OMP_FIXIT_COMMAND 
+
+$OMP_FIXIT_COMMAND &> plugin.out
+
+if [[ $? -ne 0 ]]; then
+  echo "error optimizing main.cpp"
+fi
+
+# TODO right now it creates main.opt.cpp. change to directly overwrite the original
+mv main.cpp main.orignal.cpp
+mv main.opt.cpp main.cpp
+
