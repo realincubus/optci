@@ -13,7 +13,8 @@ fi
 export ARTIFACT=$BASE/artifacts/$2
 export FILES=$3
 
-
 mkdir -p $ARTIFACT
+
+export PATH=$PATH:$PWD  
 
 $BASE/$2

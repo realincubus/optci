@@ -12,16 +12,14 @@ index f2640e2..048d0f5 100644
  SET( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}" )
  
 diff --git a/main.cpp b/main.cpp
-index 848d385..c4589df 100644
+index 13fe4fc..d623f2a 100644
 --- a/main.cpp
 +++ b/main.cpp
-@@ -25,7 +25,9 @@ int main(int argc, char** argv){
+@@ -28,6 +28,7 @@ int main(int argc, char** argv){
+   int iterations = max_iterations;
  
-   auto start = std::chrono::high_resolution_clock::now();
- 
-+#pragma omp parallel
-   for( int iterations = 0; iterations < max_iterations ; iterations++ ) {
-+#pragma omp for
+   while( iterations-- ) {
++#pragma omp parallel for
      for ( int y = 0; y < Y; y++ ){
        for ( int x = 0; x < X; x++ ) { 
          targetVector[y] += matrix[x+y*X] * inputVector[x];
