@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 #include <vector>
 #include "ConfigurationMatrix.hpp"
+#include "Phase.hpp"
 
 TEST( ConfigurationMatrixTest, Positive ){
   ConfigurationMatrix m;
@@ -57,5 +58,39 @@ TEST( ConfigurationMatrixTest, Positive ){
 }
 
 TEST( PhaseTest, Positive ){
+  Phase p("my_command.sh"); 
+  std::vector<std::string> paths;
+  ConfigurationMatrix m;
+  Axis cores("CORES_PER_SOCKET");
+  cores.add_value("1");
+  cores.add_value("2");
+  cores.add_value("4");
+  cores.add_value("8");
+
+  Axis sockets("SOCKETS");
+  sockets.add_value("0");
+  sockets.add_value("1");
+
+  m.add_axis(sockets);
+  m.add_axis(cores);
+
+  p.set_run_configuration(m);
+
+  p.execute(paths);
+
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
