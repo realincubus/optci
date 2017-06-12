@@ -1,3 +1,5 @@
+#pragma once
+
 
 #include <string>
 #include <vector>
@@ -18,6 +20,9 @@ struct Configuration {
     auto end() {
         /* code */
         return configuration.end();
+    }
+    auto& operator[](int index){
+      return configuration[index];
     }
   private:
     std::vector<std::pair<std::string,std::string>> configuration;
