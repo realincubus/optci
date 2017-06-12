@@ -1,0 +1,6 @@
+#!/bin/bash  -xe
+rm -rf optci_example_matrix
+# TODO for testing a copy is ok
+cp -r $FILES/orig_code
+
+echo 'export CHECKOUT_FOLDER=optci_example_matrix' > $ARTIFACT/a1

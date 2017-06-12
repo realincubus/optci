@@ -1,0 +1,13 @@
+#!/bin/bash
+
+echo "change the code here"
+
+ln -fs  perf.data.base perf.data
+perf annotate --stdio -l -P -d bin_matrix_multiply_example > perf.base.txt
+
+echo "convert the perf data to hotspots.txt"
+bin_perf_data_converter perf.base.txt
+OPTCI_EXPORT HOTSPOTS hotspots.txt
+
+cp $FILES/CMakeLists.txt .
+cp $FILES/main.cpp .

@@ -154,8 +154,12 @@ void add_config_information( Phase& phase ) {
   
 }
 
-int main(int argc, char** argv){
-
+#if BUILDING_LIB
+int optci_run( int argc, char** argv )
+#else
+int main(int argc, char** argv)
+#endif
+{
    path p = argv[0];
 
    auto install_dir = canonical(p).remove_filename();

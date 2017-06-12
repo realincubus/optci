@@ -14,7 +14,6 @@ SET( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}" )
 
 SET( CMAKE_EXPORT_COMPILE_COMMANDS on )
 
-#INCLUDE_DIRECTORIES( )
 ADD_EXECUTABLE(bin_optci main.cpp)
 
 TARGET_LINK_LIBRARIES( bin_optci stdc++fs )
@@ -27,3 +26,12 @@ ADD_EXECUTABLE(configuration_matrix_test ConfigurationMatrixTest.cpp)
 
 TARGET_LINK_LIBRARIES( configuration_matrix_test  gtest gtest_main )
 
+
+ADD_LIBRARY(optci SHARED main.cpp)
+
+TARGET_LINK_LIBRARIES( optci stdc++fs )
+set_target_properties( optci PROPERTIES COMPILE_FLAGS "-DBUILDING_LIB=1")
+
+INCLUDE_DIRECTORIES( "." )
+
+ADD_SUBDIRECTORY( unit_tests )

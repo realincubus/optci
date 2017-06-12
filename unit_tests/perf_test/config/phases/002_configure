@@ -1,0 +1,5 @@
+#!/bin/bash -xe
+cmake -DCMAKE_CXX_FLAGS="-fno-omit-frame-pointer -g" .
+
+echo 'export SIZE=1000' > $ARTIFACT/a1
+echo 'export ITERATIONS=10000' >> $ARTIFACT/a1
