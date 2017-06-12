@@ -22,11 +22,6 @@ ADD_EXECUTABLE( bin_perf_data_converter pdc_main.cpp)
 
 TARGET_LINK_LIBRARIES( bin_perf_data_converter stdc++fs )
 
-ADD_EXECUTABLE(configuration_matrix_test ConfigurationMatrixTest.cpp)
-
-TARGET_LINK_LIBRARIES( configuration_matrix_test  gtest gtest_main )
-
-
 ADD_LIBRARY(optci SHARED main.cpp)
 
 TARGET_LINK_LIBRARIES( optci stdc++fs )

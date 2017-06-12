@@ -166,11 +166,18 @@ function clear_memory {
 }
 export -f clear_memory
 
+function drop_caches {
+  echo 3 > /proc/sys/vm/drop_caches 
+}
+
+export -f drop_caches
+
 function OPTCI_PREPARE {
 
   clear_memory
   disable_turbo_boost
   governor_set_performance
+  drop_caches
 
   check_disk_load
   check_network_load
