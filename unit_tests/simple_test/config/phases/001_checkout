@@ -1,5 +1,5 @@
 #!/bin/bash  -xe
 rm -rf optci_example_matrix
-git clone https://github.com/realincubus/optci_example_matrix.git
+cp -r $FILES/optci_example_matrix optci_example_matrix
 
 echo 'export CHECKOUT_FOLDER=optci_example_matrix' > $ARTIFACT/a1

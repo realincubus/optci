@@ -2,4 +2,6 @@
 
 echo "change the code here"
 
-git apply $FILES/opt.patch
+cp $FILES/CMakeLists.txt .
+cp $FILES/main.cpp .
+
