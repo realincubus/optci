@@ -200,8 +200,11 @@ function  OPTCI_RUN {
 
 export -f OPTCI_RUN
 
+function OPTCI_EXPORT {
+  echo "export $1=$2" >> $ARTIFACT/optci_vars
+}
 
 
-
+export -f OPTCI_EXPORT
 
 
