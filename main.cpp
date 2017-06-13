@@ -43,8 +43,7 @@ int main(int argc, char** argv)
 
   parse_folder( root.sub_phases, phases_folder );
 
-  YAML::Node yaml_root;
-  add_config_information( yaml_root, root );
+  add_config_information( root );
 
   //root.print();
 
