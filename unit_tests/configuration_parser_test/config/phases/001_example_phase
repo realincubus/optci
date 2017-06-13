@@ -1,0 +1,3 @@
+#!/bin/bash
+echo "running with $SOCKETS and $CORES_PER_SOCKET"
+echo "export RESULT_$SOCKETS""_$CORES_PER_SOCKET=$(echo "$SOCKETS * $CORES_PER_SOCKET" | bc)" > $ARTIFACT/r_$SOCKETS""_$CORES_PER_SOCKET

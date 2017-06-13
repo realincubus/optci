@@ -8,67 +8,15 @@
 
 #include "ConfigurationMatrix.hpp"
 #include "Phase.hpp"
+#include "ConfigurationParser.hpp"
 
 using namespace std::experimental::filesystem;
 using namespace std;
 
 std::experimental::filesystem::path g_base_dir;
 std::string g_files_folder;
+std::string g_config_file;
 
-void parse_folder( std::vector<Phase>& phases, std::string folder ) {
-  std::cout << "folder " << folder << std::endl;
-
-  std::vector<std::string> paths;
-
-  for( auto& p : directory_iterator(folder) ){
-    paths.push_back( p.path() );
-  }
- 
-  std::sort( paths.begin(), paths.end() ); 
-
-  for(auto& p : paths) {
-    std::cout << "p " << p << std::endl;
-    if ( is_regular_file( p ) ) {
-      Phase phase( p );
-      phases.push_back( phase );
-    }
-    if ( is_directory( p ) ) {
-      Phase phase( p );
-      parse_folder( phase.sub_phases, p );
-      phases.push_back( phase );
-    }
-  }
-}
-
-
-
-
-void add_config_information( Phase& phase ) {
-
-  if ( phase.get_name() == "004_base/001_run" ) {
-    // get this information from hwloc
-    ConfigurationMatrix m;
-    Axis cores("CORES");
-    cores.add_value("1");
-    cores.add_value("2");
-    cores.add_value("4");
-    cores.add_value("8");
-
-    Axis sockets("SOCKETS");
-    sockets.add_value("0");
-    sockets.add_value("0-1");
-
-    m.add_axis(sockets);
-    m.add_axis(cores);
-
-    phase.set_run_configuration(m); 
-  }
-
-  for( auto&& element : phase.sub_phases ){
-      add_config_information( element );
-  }
-  
-}
 
 #if BUILDING_LIB
 int optci_run( int argc, char** argv )
@@ -89,12 +37,14 @@ int main(int argc, char** argv)
 
   // TODO remove 
   g_files_folder = canonical(files_folder);
+  g_config_file = canonical(hook_folder) / "config.yaml" ;
 
   Phase root( phases_folder );
 
   parse_folder( root.sub_phases, phases_folder );
 
-  add_config_information( root );
+  YAML::Node yaml_root;
+  add_config_information( yaml_root, root );
 
   root.print();
 

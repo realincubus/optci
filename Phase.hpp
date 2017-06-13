@@ -3,12 +3,15 @@
 #include <string>
 #include <fstream>
 #include <experimental/filesystem>
+#include <functional>
 
 #include "ConfigurationMatrix.hpp"
+
 
 // TODO remove global var
 extern std::experimental::filesystem::path g_base_dir;
 extern std::string g_files_folder;
+extern std::string g_config_file;
 
 struct Phase {
   Phase( std::string phase_name ) :
@@ -50,6 +53,18 @@ struct Phase {
 
   auto set_run_configuration( ConfigurationMatrix& m) {
     matrix = new ConfigurationMatrix(m);
+  }
+
+  void for_each_phase( std::string p_name, std::function<void(Phase&)> f)
+  {
+    std::cout << "p_name " << p_name << std::endl;
+    std::cout << "name " << name << std::endl;
+    if ( p_name == name ){
+      f( *this );
+    }
+    for( auto&& sub_phase : sub_phases ){
+      sub_phase.for_each_phase( p_name, f );
+    }
   }
 
 private:
@@ -111,5 +126,34 @@ private:
   std::vector<std::string> artifacts;
   ConfigurationMatrix* matrix = nullptr;
 };
+
+
+inline void parse_folder( std::vector<Phase>& phases, std::string folder ) {
+  using namespace std::experimental::filesystem;
+  using namespace std;
+  std::cout << "folder " << folder << std::endl;
+
+  std::vector<std::string> paths;
+
+  for( auto& p : directory_iterator(folder) ){
+    paths.push_back( p.path() );
+  }
+ 
+  std::sort( paths.begin(), paths.end() ); 
+
+  for(auto& p : paths) {
+    std::cout << "p " << p << std::endl;
+    if ( is_regular_file( p ) ) {
+      Phase phase( p );
+      phases.push_back( phase );
+    }
+    if ( is_directory( p ) ) {
+      Phase phase( p );
+      parse_folder( phase.sub_phases, p );
+      phases.push_back( phase );
+    }
+  }
+}
+
 
 

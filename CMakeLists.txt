@@ -14,17 +14,19 @@ SET( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}" )
 
 SET( CMAKE_EXPORT_COMPILE_COMMANDS on )
 
-ADD_EXECUTABLE(bin_optci main.cpp)
+SET( LIBRARIES stdc++fs yaml-cpp )
+SET( SOURCES main.cpp ConfigurationParser.cpp )
 
-TARGET_LINK_LIBRARIES( bin_optci stdc++fs )
+ADD_EXECUTABLE(bin_optci ${SOURCES})
+TARGET_LINK_LIBRARIES( bin_optci ${LIBRARIES} )
 
 ADD_EXECUTABLE( bin_perf_data_converter pdc_main.cpp)
 
 TARGET_LINK_LIBRARIES( bin_perf_data_converter stdc++fs )
 
-ADD_LIBRARY(optci SHARED main.cpp)
+ADD_LIBRARY(optci SHARED ${SOURCES})
 
-TARGET_LINK_LIBRARIES( optci stdc++fs )
+TARGET_LINK_LIBRARIES( optci ${LIBRARIES} )
 set_target_properties( optci PROPERTIES COMPILE_FLAGS "-DBUILDING_LIB=1")
 
 INCLUDE_DIRECTORIES( "." )
