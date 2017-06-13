@@ -29,4 +29,6 @@ set_target_properties( optci PROPERTIES COMPILE_FLAGS "-DBUILDING_LIB=1")
 
 INCLUDE_DIRECTORIES( "." )
 
+enable_testing()
+
 ADD_SUBDIRECTORY( unit_tests )

@@ -58,6 +58,11 @@ TEST( ConfigurationMatrixTest, Positive ){
 }
 
 TEST( PhaseTest, Positive ){
+  namespace fs = std::experimental::filesystem;
+
+  // TODO change later
+  g_base_dir=fs::canonical("../../bin_optci").remove_filename();
+
   Phase p("my_command.sh"); 
   std::vector<std::string> paths;
   ConfigurationMatrix m;
