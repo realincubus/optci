@@ -7,8 +7,8 @@
 #include "ConfigurationMatrix.hpp"
 
 // TODO remove global var
-std::experimental::filesystem::path g_base_dir;
-std::string g_files_folder;
+extern std::experimental::filesystem::path g_base_dir;
+extern std::string g_files_folder;
 
 struct Phase {
   Phase( std::string phase_name ) :
@@ -32,14 +32,7 @@ struct Phase {
   void execute (std::vector<std::string>& paths) {
     using namespace std;
     if ( sub_phases.empty() ) {
-      if ( matrix ) {
-        matrix->for_each_configuration( [&](auto a){ 
-            run_command( paths, name );
-          }
-        );
-      }else{
-        run_command( paths, name );
-      }
+      run_command( paths, name );
     }
   
     parse_artifacts( paths, "artifacts/"s+ name );
@@ -74,8 +67,7 @@ private:
     }
   }
 
-  void run_command( std::vector<std::string>& paths, std::string command ) {
-    using namespace std;
+  void build_source_file_from_path(std::vector<std::string>& paths){
     std::ofstream out( "source.this" );
 
     // build source file
@@ -86,8 +78,32 @@ private:
 	out << line << std::endl;
       }
     }
-    
-    system( (g_base_dir.string() + "run_wrapper.sh "s + "source.this"s + " "s + command + " "s + g_files_folder).c_str() ) ;
+  }
+
+  void run_command( std::vector<std::string>& paths, std::string command ) {
+    using namespace std;
+
+    if ( matrix ) {
+      matrix->for_each_configuration( [&](auto configuration){ 
+        build_source_file_from_path(paths);
+
+        // append more stuff for likwid or numactl
+        std::ofstream out( "source.this", ios::app );
+        for( auto& pair : configuration ){
+          out << "export " << pair.first << "=" << pair.second << std::endl;
+        }
+        out.close();
+        std::string full_command = g_base_dir.string() + "run_wrapper.sh "s + "source.this"s + " \""s + command + "\" "s + g_files_folder;
+        //std::cout << "full_command: " << full_command << std::endl;
+        system( full_command.c_str() ) ;
+      });
+    }else{
+      // TODO remove doublication
+      build_source_file_from_path(paths);
+      std::string full_command = g_base_dir.string() + "run_wrapper.sh "s + "source.this"s + " \""s + command + "\" "s + g_files_folder;
+      //std::cout << "full_command: " << full_command << std::endl;
+      system( full_command.c_str() ) ;
+    }
   }
 
 

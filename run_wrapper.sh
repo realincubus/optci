@@ -1,11 +1,12 @@
 #!/bin/bash 
 
+echo "sourcing $1"
 . $1
 
 BASE=$PWD
 
 if [ -z ${CHECKOUT_FOLDER+x} ]; then 
-  echo "var is unset"; 
+  echo "" 
 else 
   cd $CHECKOUT_FOLDER
 fi

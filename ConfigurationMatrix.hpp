@@ -69,10 +69,10 @@ public:
             combine_axis( element_config, i + 1 );
           }else {
             for( auto& exp : element_config ){
-              std::cout << "export " << exp.first << "=" << exp.second << std::endl;
+              //std::cout << "export " << exp.first << "=" << exp.second << std::endl;
             }
-            cout << "export " << a.name << "=" << element << endl;
-            std::cout << std::endl;
+            //cout << "export " << a.name << "=" << element << endl;
+            //std::cout << std::endl;
             element_config.add( a.name, element );
             f ( element_config );
           }

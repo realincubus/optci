@@ -12,6 +12,8 @@
 using namespace std::experimental::filesystem;
 using namespace std;
 
+std::experimental::filesystem::path g_base_dir;
+std::string g_files_folder;
 
 void parse_folder( std::vector<Phase>& phases, std::string folder ) {
   std::cout << "folder " << folder << std::endl;
