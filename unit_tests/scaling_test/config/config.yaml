@@ -1,0 +1,6 @@
+scaling_phases: [ "config/phases/004_base/001_run", "config/phases/007_rerun/001_run" ]
+matrix:
+  - name: "SOCKETS"
+    values: [ "0", "1" ]
+  - name: "CORES_PER_SOCKET"
+    values: [ "1", "2", "4", "8" ]

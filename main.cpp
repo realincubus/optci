@@ -46,7 +46,7 @@ int main(int argc, char** argv)
   YAML::Node yaml_root;
   add_config_information( yaml_root, root );
 
-  root.print();
+  //root.print();
 
   try {
     remove_all( "artifacts" );

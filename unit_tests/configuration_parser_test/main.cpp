@@ -9,7 +9,7 @@ namespace fs = std::experimental::filesystem;
 
 TEST( ADD_CONFIG_TO_PHASES, Positive ) {
 
-  // TODO remove this hack;
+  // TODO remove this intialization stuff ;
   fs::path p = "../../bin_optci";
 
   auto install_dir = canonical(p).remove_filename();
@@ -34,7 +34,6 @@ TEST( ADD_CONFIG_TO_PHASES, Positive ) {
   } 
 
   YAML::Node config = YAML::LoadFile(g_config_file);
-
 
   std::vector<std::string> phases;
   if (config["scaling_phases"]) {
@@ -71,8 +70,6 @@ TEST( ADD_CONFIG_TO_PHASES, Positive ) {
 
   std::vector<std::string> paths;
   root.execute(paths);
-  
-  //add_config_information( config, root );
 
 
 }
