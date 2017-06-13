@@ -1,8 +1,10 @@
 #!/bin/bash
 OPTCI_PREPARE
 
-time="$(OPTCI_RUN ./bin_matrix_multiply_example $SIZE $ITERATIONS)"
+time="$(OPTCI_RUN numactl -N $SOCKETS -C +$CORES_PER_SOCKET ./bin_matrix_multiply_example $SIZE $ITERATIONS)"
 
-echo "export BASE_RUNTIME=$time" > $ARTIFACT/base_runtime
+CONFIG_TUPLE=$SOCKETS''_$CORES_PER_SOCKET
+
+echo "export BASE_RUNTIME_$CONFIG_TUPLE=$time" > $ARTIFACT/base_runtime_$CONFIG_TUPLE
 
 OPTCI_CLEANUP

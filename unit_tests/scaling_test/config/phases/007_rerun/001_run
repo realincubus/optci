@@ -3,6 +3,8 @@ OPTCI_PREPARE
 
 time=$(OPTCI_RUN ./bin_matrix_multiply_example $SIZE $ITERATIONS)
 
-echo "export CHANGED_RUNTIME=$time" > $ARTIFACT/changed_runtime
+CONFIG_TUPLE=$SOCKETS''_$CORES_PER_SOCKET
+
+echo "export CHANGED_RUNTIME_$CONFIG_TUPLE=$time" > $ARTIFACT/changed_runtime_$CONFIG_TUPLE
 
 OPTCI_CLEANUP
