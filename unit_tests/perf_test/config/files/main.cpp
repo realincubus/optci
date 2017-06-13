@@ -28,6 +28,7 @@ int main(int argc, char** argv){
   int iterations = max_iterations;
 
   while( iterations-- ) {
+#pragma omp paralle for
     for ( int y = 0; y < Y; y++ ){
       for ( int x = 0; x < X; x++ ) { 
         targetVector[y] += matrix[x+y*X] * inputVector[x];
