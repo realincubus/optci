@@ -33,10 +33,9 @@ int main(int argc, char** argv)
   // TODO add sanity check
   path hook_folder = argv[1];
   path phases_folder = hook_folder / "phases";
-  path files_folder = hook_folder / "files";
 
   // TODO remove 
-  g_files_folder = canonical(files_folder);
+  g_files_folder = canonical(hook_folder) / "files";
   g_config_file = canonical(hook_folder) / "config.yaml" ;
 
   Phase root( phases_folder );

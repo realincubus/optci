@@ -20,9 +20,8 @@ TEST( ADD_CONFIG_TO_PHASES, Positive ) {
 
   fs::path hook_folder = "config";
   fs::path phases_folder = hook_folder / "phases";
-  fs::path files_folder = hook_folder / "files";
 
-  g_files_folder = canonical(files_folder);
+  g_files_folder = canonical(hook_folder) / "files";
   g_config_file = canonical(hook_folder / "config.yaml" );
 
   Phase root("config/phases");
