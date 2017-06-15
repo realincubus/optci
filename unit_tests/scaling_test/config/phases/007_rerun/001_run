@@ -1,7 +1,9 @@
 #!/bin/bash
 OPTCI_PREPARE
 
-time=$(OPTCI_RUN ./bin_matrix_multiply_example $SIZE $ITERATIONS)
+COMMAND="./bin_matrix_multiply_example $SIZE $ITERATIONS > /dev/null"
+
+time="$(OPTCI_PIN_RUN "$COMMAND")"
 
 CONFIG_TUPLE=$SOCKETS''_$CORES_PER_SOCKET
 

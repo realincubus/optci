@@ -172,6 +172,18 @@ function drop_caches {
 
 export -f drop_caches
 
+function governor_set_performance {
+  cpupower frequency-set -g performance
+}
+
+export -f governor_set_performance
+
+function governor_set_powersave {
+  cpupower frequency-set -g powersave
+}
+
+export -f governor_set_powersave
+
 function OPTCI_PREPARE {
 
   clear_memory
@@ -206,6 +218,23 @@ function  OPTCI_RUN {
 }
 
 export -f OPTCI_RUN
+
+# convenience functions
+
+function OPTCI_PIN_RUN {
+  START=$(date +%s.%N)
+  CORES_PER_SOCKET="$((CORES_PER_SOCKET-1))"
+  LIKWID_PIN_PATTERN="S$SOCKETS:0-$CORES_PER_SOCKET"
+  if [[ $SOCKETS == "1" ]]; then
+    LIKWID_PIN_PATTERN="S0:0-$CORES_PER_SOCKET@S1:0-$CORES_PER_SOCKET"
+  fi
+  likwid-pin -c $LIKWID_PIN_PATTERN $@ > /dev/null
+  END=$(date +%s.%N)
+  DIFF=$(echo "$END - $START" | bc)
+  echo "$DIFF"
+}
+
+export -f OPTCI_PIN_RUN
 
 function OPTCI_EXPORT {
   echo "export $1=$2" >> $ARTIFACT/optci_vars

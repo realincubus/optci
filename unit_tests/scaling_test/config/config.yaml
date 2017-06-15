@@ -3,4 +3,4 @@ matrix:
   - name: "SOCKETS"
     values: [ "0", "1" ]
   - name: "CORES_PER_SOCKET"
-    values: [ "1", "2", "4", "8" ]
+    values: [ "1", "6", "8", "12" ]

@@ -67,6 +67,42 @@ struct Phase {
     }
   }
 
+  // this moves in a intermediate phase that acts as a matrix
+  void apply_matrix(){
+    int phase_number = 0;
+
+    // make a copy of this phase
+    auto old_phase = *this;
+
+    old_phase->matrix = nullptr;
+
+    //if ( this->sub_phases.empty() ) {
+      Phase matrix_phase("matrix_phase");
+      matrix->for_each_configuration( [&](auto configuration ) {
+        matrix_phase.sub_phases.emplace_back( std::to_string(phase_number++) );
+        auto& last = matrix_phase.sub_phases.back();
+        last.sub_phases.push_back( old_phase );
+      });
+
+#if 0
+    }else{
+      Phase matrix_phase("matrix_phase");
+      auto sub_phases = this->sub_phases;
+      this->sub_phases.clear();
+      matrix->for_each_configuration( [&](auto configuration ) {
+        matrix_phase.sub_phases.emplace_back( std::to_string(phase_number++) );
+        auto& last = matrix_phase.sub_phases.back();
+        last.sub_phases = sub_phases;
+      });
+      this->sub_phases.push_back( matrix_phase );
+    }
+#endif
+    this->sub_phases.push_back( matrix_phase );
+
+    delete this->matrix;
+    this->matrix = nullptr;
+  }
+
 private:
   void parse_artifacts(std::vector<std::string>& paths, std::string folder){
     using namespace std::experimental::filesystem;
@@ -122,9 +158,11 @@ private:
   }
 
 
+
   std::string name;
   std::vector<std::string> artifacts;
   ConfigurationMatrix* matrix = nullptr;
+  std::chrono::microseconds duration;
 };
 
 
