@@ -5,7 +5,7 @@ COMMAND="./bin_matrix_multiply_example $SIZE $ITERATIONS > /dev/null"
 
 time="$(OPTCI_PIN_RUN "$COMMAND")"
 
-CONFIG_TUPLE=$SOCKETS''_$CORES_PER_SOCKET
+CONFIG_TUPLE=$OPTCI_CONFIG_TUPLE
 
 echo "export CHANGED_RUNTIME_$CONFIG_TUPLE=$time" > $ARTIFACT/changed_runtime_$CONFIG_TUPLE
 

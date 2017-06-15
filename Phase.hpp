@@ -74,7 +74,7 @@ struct Phase {
     // make a copy of this phase
     auto old_phase = *this;
 
-    old_phase->matrix = nullptr;
+    old_phase.matrix = nullptr;
 
     //if ( this->sub_phases.empty() ) {
       Phase matrix_phase("matrix_phase");
@@ -140,9 +140,18 @@ private:
 
         // append more stuff for likwid or numactl
         std::ofstream out( "source.this", ios::app );
+        std::string config_tuple;
+        bool first = true;
         for( auto& pair : configuration ){
           out << "export " << pair.first << "=" << pair.second << std::endl;
+          if ( !first ) {
+            config_tuple += "_";
+          }else{
+            first=false;
+          }
+          config_tuple += pair.second;
         }
+        out << "export OPTCI_CONFIG_TUPLE=" << config_tuple << endl;
         out.close();
         std::string full_command = g_base_dir.string() + "run_wrapper.sh "s + "source.this"s + " \""s + command + "\" "s + g_files_folder;
         //std::cout << "full_command: " << full_command << std::endl;
