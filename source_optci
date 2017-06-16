@@ -222,12 +222,41 @@ export -f OPTCI_RUN
 # convenience functions
 
 function OPTCI_PIN_RUN {
+  
+  FIRST_SOCKET="1"
+  SOCKETS_PATTERN=""
+  for (( s = 0; s < $SOCKETS; s++ )); do
+    TOTAL_CORES_PER_SOCKET=$(likwid-topology | grep "Cores per socket" | awk -F ":" ' {print $2}')
+    CORES_PATTERN=""
+    FIRST_CORE="1"
+    for (( c = 0; c < $CORES_PER_SOCKET; c++ )); do
+      for (( t = 0; t < $THREADS_PER_CORE; t++ )); do
+        if [[ $FIRST_CORE == "1" ]]; then
+          FIRST_CORE="0"
+        else
+          CORES_PATTERN="$CORES_PATTERN,"
+        fi
+        CORES_PATTERN="$CORES_PATTERN$(echo "$c + $t * $TOTAL_CORES_PER_SOCKET" | bc)"
+      done
+    done
+    if [[ $FIRST_SOCKET == "1" ]]; then
+      FIRST_SOCKET="0"
+    else
+      SOCKETS_PATTERN="$SOCKETS_PATTERN@"
+    fi
+    SOCKETS_PATTERN="$SOCKETS_PATTERN""S$s:$CORES_PATTERN"
+  done
+
+  LIKWID_PIN_PATTERN=$SOCKETS_PATTERN
+
+  #CORES_PER_SOCKET="$((CORES_PER_SOCKET-1))"
+  
+  #LIKWID_PIN_PATTERN="S$SOCKETS:0-$CORES_PER_SOCKET"
+  #if [[ $SOCKETS == "1" ]]; then
+    #LIKWID_PIN_PATTERN="S0:0-$CORES_PER_SOCKET@S1:0-$CORES_PER_SOCKET"
+  #fi
+  echo likwid-pin -c $LIKWID_PIN_PATTERN $@  > pin.pattern
   START=$(date +%s.%N)
-  CORES_PER_SOCKET="$((CORES_PER_SOCKET-1))"
-  LIKWID_PIN_PATTERN="S$SOCKETS:0-$CORES_PER_SOCKET"
-  if [[ $SOCKETS == "1" ]]; then
-    LIKWID_PIN_PATTERN="S0:0-$CORES_PER_SOCKET@S1:0-$CORES_PER_SOCKET"
-  fi
   likwid-pin -c $LIKWID_PIN_PATTERN $@ > /dev/null
   END=$(date +%s.%N)
   DIFF=$(echo "$END - $START" | bc)
