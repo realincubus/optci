@@ -1,0 +1,7 @@
+#!/bin/bash
+
+echo "change the code here"
+
+cp $FILES/CMakeLists.txt .
+cp $FILES/main.cpp .
+

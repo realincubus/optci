@@ -95,20 +95,20 @@ void add_config_information( Phase& root ) {
         auto [sockets, cores_per_socket, threads_per_core] = get_topology();
         Axis socket_axis("SOCKETS");
         for (int s = 0; s < sockets; s++){
-          socket_axis.add_value( to_string(s) );
+          socket_axis.add_value( to_string(s+1) );
         }
         matrix.add_axis( socket_axis );
 
         Axis cores_per_socket_axis("CORES_PER_SOCKET");
         for (int c = 0; c < cores_per_socket; c++){
-          cores_per_socket_axis.add_value( to_string(c) );
+          cores_per_socket_axis.add_value( to_string(c+1) );
         }
 
         matrix.add_axis( cores_per_socket_axis );
 
         Axis threads_per_core_axis("THREADS_PER_CORE");
         for (int t = 0; t < threads_per_core; t++){
-          threads_per_core_axis.add_value( to_string(t) );
+          threads_per_core_axis.add_value( to_string(t+1) );
         }
 
         matrix.add_axis( threads_per_core_axis );

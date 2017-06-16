@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# compare the content of the env vars
+echo comparing runtime of two codes
+
+# TODO automatize this by passing vars from config file
+function compare_one {
+  CHANGED_RUNTIME=$2
+  BASE_RUNTIME=$1
+  CORES=$3
+  IS_SPEEDUP=$(echo "$CHANGED_RUNTIME < $BASE_RUNTIME" | bc -l)
+  SPEEDUP=$(echo "$BASE_RUNTIME / $CHANGED_RUNTIME" | bc -l)
+  EFF=$(echo "$SPEEDUP / $CORES" | bc -l)
+  if [[ $IS_SPEEDUP == "1"  ]]; then
+    echo "optimization caused a speedup of $SPEEDUP eff $EFF"  
+    echo $SPEEDUP >> speedup.txt
+  else
+    echo "optimization caused a slowdown of $SPEEDUP eff $EFF"
+    echo $SPEEDUP >> speedup.txt 
+  fi
+}
+
+BASE_RUNTIME_VAR=BASE_RUNTIME_$OPTCI_CONFIG_TUPLE
+CHANGED_RUNTIME_VAR=CHANGED_RUNTIME_$OPTCI_CONFIG_TUPLE
+NUMBER_OF_CORES=$( echo "$SOCKETS * $CORES_PER_SOCKET * $THREADS_PER_CORE" | bc )
+
+compare_one ${!BASE_RUNTIME_VAR} ${!CHANGED_RUNTIME_VAR} $NUMBER_OF_CORES 
+
+#rm speedup.txt
+#
+#compare_one $BASE_RUNTIME_0_1  $CHANGED_RUNTIME_0_1 1 
+#compare_one $BASE_RUNTIME_0_6  $CHANGED_RUNTIME_0_6 6
+#compare_one $BASE_RUNTIME_0_8  $CHANGED_RUNTIME_0_8 8
+#compare_one $BASE_RUNTIME_0_12 $CHANGED_RUNTIME_0_12 12
+#
+#compare_one $BASE_RUNTIME_1_1  $CHANGED_RUNTIME_1_1 2
+#compare_one $BASE_RUNTIME_1_6  $CHANGED_RUNTIME_1_6 12
+#compare_one $BASE_RUNTIME_1_8  $CHANGED_RUNTIME_1_8 16
+#compare_one $BASE_RUNTIME_1_12 $CHANGED_RUNTIME_1_12 24
