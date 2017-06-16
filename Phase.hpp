@@ -131,6 +131,20 @@ private:
     }
   }
 
+  void run_in_pipe( std::string command, std::ostream& to ) {
+    FILE* in = nullptr;
+    if ( !(in = popen(command.c_str(), "r") ) ){
+    }else{
+      constexpr int size = 4096;
+      char buff[size];
+      while (fgets(buff, sizeof(buff), in) != NULL){
+        std::string line(&buff[0]);
+        to << line;
+      } 
+    }
+    pclose(in);
+  }
+
   void run_command( std::vector<std::string>& paths, std::string command ) {
     using namespace std;
 
@@ -155,14 +169,14 @@ private:
         out.close();
         std::string full_command = g_base_dir.string() + "run_wrapper.sh "s + "source.this"s + " \""s + command + "\" "s + g_files_folder;
         //std::cout << "full_command: " << full_command << std::endl;
-        system( full_command.c_str() ) ;
+        run_in_pipe( full_command.c_str(), cout );
       });
     }else{
       // TODO remove doublication
       build_source_file_from_path(paths);
       std::string full_command = g_base_dir.string() + "run_wrapper.sh "s + "source.this"s + " \""s + command + "\" "s + g_files_folder;
       //std::cout << "full_command: " << full_command << std::endl;
-      system( full_command.c_str() ) ;
+      run_in_pipe( full_command.c_str(), cout );
     }
   }
 

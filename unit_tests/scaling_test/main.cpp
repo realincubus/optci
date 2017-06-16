@@ -31,7 +31,16 @@ TEST( SIMPLE, Positive ) {
   ifstream in("optci_example_matrix/speedup.txt");
   double speedup;
   in >> speedup;
+  in >> speedup;
+  in >> speedup;
+  in >> speedup;
 
+  in >> speedup;
+  in >> speedup;
+  in >> speedup;
+  in >> speedup;
+
+  // the last value in the file sould have the speedup of 2 sockets * 12 cores
   EXPECT_GE( speedup, 2 );
 
 }

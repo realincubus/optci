@@ -1,4 +1,4 @@
-scaling_phases: [ "config/phases/004_base/001_run", "config/phases/007_rerun/001_run", "config/phases/008_compare" ]
+scaling_phases: [ "config/phases/004_base/001_run", "config/phases/007_rerun/001_run", "config/phases/009_compare" ]
 matrix:
   - name: "SOCKETS"
     values: [ "0", "1" ]
