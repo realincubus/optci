@@ -15,7 +15,7 @@ SET( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}" )
 SET( CMAKE_EXPORT_COMPILE_COMMANDS on )
 
 SET( LIBRARIES stdc++fs yaml-cpp hwloc )
-SET( SOURCES main.cpp ConfigurationParser.cpp )
+SET( SOURCES main.cpp ConfigurationParser.cpp Phase.cpp )
 
 ADD_EXECUTABLE(bin_optci ${SOURCES})
 TARGET_LINK_LIBRARIES( bin_optci ${LIBRARIES} )

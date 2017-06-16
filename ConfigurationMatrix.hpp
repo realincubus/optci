@@ -21,6 +21,7 @@ struct Configuration {
         /* code */
         return configuration.end();
     }
+
     auto& operator[](int index){
       return configuration[index];
     }
@@ -82,6 +83,15 @@ public:
 
       Configuration config;
       combine_axis( config, 0 );
+    }
+
+    auto begin() {
+        /* code */
+        return axis.begin();
+    }
+    auto end() {
+        /* code */
+        return axis.end();
     }
 
 private:

@@ -68,26 +68,18 @@ std::tuple<int,int,int> get_topology() {
   return make_tuple( number_of_sockets, cores_per_socket, threads_per_core );
 }
 
-void add_config_information( Phase& root ) {
-
-  // TODO check wether a config.yaml file exists
-  if (!fs::exists(g_config_file) )  {
-    std::cout << "no config file provided not adding extra info to phases" << std::endl;
-    return;
-  } 
-
-  YAML::Node config = YAML::LoadFile(g_config_file);
-
+void handle_once( const YAML::Node& node, Phase& root )
+{
   std::vector<std::string> phases;
-  if (config["scaling_phases"]) {
-    const YAML::Node& sp = config["scaling_phases"];
+  if (node["scaling_phases"]) {
+    const YAML::Node& sp = node["scaling_phases"];
     phases = sp.as<std::vector<std::string>>();
   }
 
 
   ConfigurationMatrix matrix;
-  if (config["matrix"]){
-    const YAML::Node& m = config["matrix"];
+  if (node["matrix"]){
+    const YAML::Node& m = node["matrix"];
 
     if ( m.size() == 0 ) {
       auto val = m.as<std::string>();
@@ -130,11 +122,56 @@ void add_config_information( Phase& root ) {
     } 
   }
 
+ 
   for( auto& phase : phases ){
     root.for_each_phase( phase, [&](Phase& p){ 
-        std::cout << "setting run configuration" << std::endl;
+      std::cout << "setting run configuration" << std::endl;
       p.set_run_configuration(matrix);
     });
   }
 
 }
+
+void add_config_information( Phase& root ) {
+
+  // TODO check wether a config.yaml file exists
+  if (!fs::exists(g_config_file) )  {
+    std::cout << "no config file provided not adding extra info to phases" << std::endl;
+    return;
+  } 
+
+  YAML::Node config = YAML::LoadFile(g_config_file);
+
+  std::cout << "config.size " << config.size() << std::endl;
+
+  bool multi = false;
+  for (int i = 0 ; i < config.size() ; i++){
+    const YAML::Node& node = config[i];
+    if ( node["scaling_phases"]) {
+      std::cout << "got phase" << std::endl;
+      handle_once( node, root );
+      multi = true;
+    }
+  }
+
+  if ( !multi ) {
+    handle_once( config, root );
+  }
+
+  //root.pass_down_matrix();
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
