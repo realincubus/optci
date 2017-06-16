@@ -61,4 +61,33 @@ TEST( ADD_CONFIG_TO_PHASES, Positive ) {
 
 }
 
+TEST( GET_TOPOLOGY, Positive ) {
+  auto [ a,b,c] = get_topology();  
+  std::cout << "s " << a << " c " << b << " t " << c << std::endl;
+}
 
+TEST( ADD_COFIG_AUTO, Positive ) {
+
+  // TODO remove this intialization stuff ;
+  fs::path p = "../../bin_optci";
+
+  auto install_dir = canonical(p).remove_filename();
+  std::cout << "install_dir " << install_dir << std::endl;
+  g_base_dir = install_dir;
+
+  fs::path hook_folder = "config";
+  fs::path phases_folder = hook_folder / "phases";
+
+  g_files_folder = canonical(hook_folder) / "files";
+  g_config_file = canonical(hook_folder / "config_auto.yaml" );
+
+  Phase root("config/phases");
+
+  parse_folder( root.sub_phases, phases_folder );
+
+  add_config_information( root );
+
+  std::vector<std::string> paths;
+  root.execute(paths);
+
+}
