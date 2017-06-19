@@ -1,0 +1,18 @@
+#!/bin/bash
+OPTCI_PREPARE
+
+COMMAND="./bin_matrix_multiply_example $SIZE $ITERATIONS "
+
+echo running $COMMAND
+echo $PWD
+
+time="$(OPTCI_PIN_RUN $COMMAND)"
+
+CONFIG_TUPLE=$OPTCI_CONFIG_TUPLE
+echo "config tuple: $CONFIG_TUPLE"
+
+#echo "export CHANGED_RUNTIME_$CONFIG_TUPLE=$time" > $ARTIFACT/changed_runtime_$CONFIG_TUPLE
+
+echo CHANGED_RUNTIME_$CONFIG_TUPLE=$time >> $RESULT_FILE
+
+OPTCI_CLEANUP

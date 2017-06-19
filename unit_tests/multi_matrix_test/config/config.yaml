@@ -1,0 +1,6 @@
+- scaling_phases: [ "config/phases/002_all"]
+  matrix:
+    - name: "COMPILER"
+      values: [ "clang++", "g++" ]
+- scaling_phases: [ "config/phases/002_all/003_run", "config/phases/002_all/006_rerun" ]
+  matrix: auto

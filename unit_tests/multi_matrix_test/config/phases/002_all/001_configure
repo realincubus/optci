@@ -1,0 +1,12 @@
+#!/bin/bash 
+cp $FILES/optci_example_matrix/main.cpp main.cpp
+cp $FILES/optci_example_matrix/CMakeLists.txt CMakeLists.txt
+rm -rf CMakeFiles
+rm CMakeCache.txt
+
+CXX=$COMPILER cmake .
+
+OPTCI_EXPORT SIZE 1000
+OPTCI_EXPORT ITERATIONS 1000
+OPTCI_EXPORT RESULT_FILE run_result.txt
+
