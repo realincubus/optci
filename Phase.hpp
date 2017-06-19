@@ -4,6 +4,7 @@
 #include <fstream>
 #include <experimental/filesystem>
 #include <functional>
+#include <set>
 
 #include "ConfigurationMatrix.hpp"
 
@@ -46,7 +47,6 @@ private:
 
   bool has_matrix_var = false;
   std::string name;
-  std::vector<std::string> artifacts;
   ConfigurationMatrix matrix;
   Configuration config;
   std::chrono::microseconds duration;

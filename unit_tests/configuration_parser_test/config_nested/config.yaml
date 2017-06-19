@@ -2,5 +2,7 @@
   matrix:
     - name: "COMPILER"
       values: [ "gcc", "clang", "icc" ]
+    - name: "CXX_FLAGS"
+      values: [ "-O1", "-O2", "-O3" ]
 - scaling_phases: [ "config_nested/phases/002_all/002_run", "config_nested/phases/002_all/004_rerun" ]
   matrix: auto

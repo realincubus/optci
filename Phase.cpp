@@ -79,8 +79,18 @@ Phase::parse_artifacts(std::vector<std::string>& paths, std::string folder){
       parse_artifacts( paths, p.path() );
     }
     if ( is_regular_file( p ) ) {
-      paths.push_back( p.path() );
-      std::cout << "added " << p << " to the list of files to source" << std::endl;
+      auto f = std::find_if( begin(paths), end(paths), 
+          [&](std::string& v){ 
+            return v == p.path().string(); 
+          } 
+      );
+
+      if ( f != paths.end() )  {
+        paths.push_back( p.path() );
+        std::cout << "added " << p << " to the list of files to source" << std::endl;
+      }else{
+        std::cout << "already in list" << std::endl;
+      }
     }
   }
 }
