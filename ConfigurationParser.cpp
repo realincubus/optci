@@ -124,17 +124,26 @@ void handle_once( const YAML::Node& node, Phase& root )
 
  
   for( auto& phase : phases ){
+    bool found = false;
     root.for_each_phase( phase, [&](Phase& p){ 
-      std::cout << "setting run configuration" << std::endl;
+      std::cout << "setting run configuration for phase " << p.get_name()  << std::endl;
       p.set_run_configuration(matrix);
+      found = true;
     });
+
+    if ( !found ) {
+      std::cout << "could not find " << phase << std::endl;
+    }
   }
+
 
 }
 
 void add_config_information( Phase& root ) {
 
-  // TODO check wether a config.yaml file exists
+  std::cout << "addibg config information to phases" << std::endl;
+
+  // check wether a config.yaml file exists
   if (!fs::exists(g_config_file) )  {
     std::cout << "no config file provided not adding extra info to phases" << std::endl;
     return;

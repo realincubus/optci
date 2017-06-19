@@ -22,9 +22,28 @@ struct Configuration {
         return configuration.end();
     }
 
+    auto empty() {
+      return configuration.empty();
+    }
+
     auto& operator[](int index){
       return configuration[index];
     }
+
+    auto to_string(){
+      std::string conf_string;
+      bool first = true;
+      for( auto&& conf : configuration ){
+        if ( first ) {
+          first = false;
+        }else{
+          conf_string += "_";
+        }
+        conf_string += conf.second;
+      }
+      return conf_string;
+    }
+
   private:
     std::vector<std::pair<std::string,std::string>> configuration;
 };

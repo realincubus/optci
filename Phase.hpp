@@ -26,7 +26,15 @@ struct Phase {
   void for_each_phase( std::string p_name, std::function<void(Phase&)> f);
   void pass_down_matrix();
   void merge_matrix( ConfigurationMatrix& parent_matrix );
-  
+  void build_configuration();
+  void config_merge( Configuration& config );
+
+  bool has_matrix(){
+    return has_matrix_var;
+  }
+
+  int count_runnable_phases();
+
 private:
   void parse_artifacts(std::vector<std::string>& paths, std::string folder);
   void build_source_file_from_path(std::vector<std::string>& paths);
@@ -34,11 +42,13 @@ private:
   void run_in_pipe( std::string command, std::ostream& to ) ;
 
   void run_command( std::vector<std::string>& paths, std::string command ) ;
+  void execute_recursive (std::vector<std::string>& paths);
 
-
+  bool has_matrix_var = false;
   std::string name;
   std::vector<std::string> artifacts;
-  ConfigurationMatrix* matrix = nullptr;
+  ConfigurationMatrix matrix;
+  Configuration config;
   std::chrono::microseconds duration;
 };
 

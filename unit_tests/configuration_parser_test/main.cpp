@@ -8,8 +8,19 @@
 namespace fs = std::experimental::filesystem;
 
 
-
 TEST( ADD_CONFIG_TO_PHASES, Positive ) {
+
+  // TODO extract function in main code to prepare environment
+  try {
+    fs::remove("source.this");
+  }catch(...) {
+
+  }
+  try {
+    fs::remove_all("artifacts");
+  }catch(...) {
+
+  }
 
   // TODO remove this intialization stuff ;
   fs::path p = "../../bin_optci";
@@ -68,6 +79,18 @@ TEST( GET_TOPOLOGY, Positive ) {
 
 TEST( ADD_COFIG_AUTO, Positive ) {
 
+  // TODO extract function in main code to prepare environment
+  try {
+    fs::remove("source.this");
+  }catch(...) {
+
+  }
+  try {
+    fs::remove_all("artifacts");
+  }catch(...) {
+
+  }
+
   // TODO remove this intialization stuff ;
   fs::path p = "../../bin_optci";
 
@@ -94,6 +117,18 @@ TEST( ADD_COFIG_AUTO, Positive ) {
 
 TEST( NESTED_PHASES, Positive ) {
 
+  // TODO extract function in main code to prepare environment
+  try {
+    fs::remove("source.this");
+  }catch(...) {
+
+  }
+  try {
+    fs::remove_all("artifacts");
+  }catch(...) {
+
+  }
+
   // TODO remove this intialization stuff ;
   fs::path p = "../../bin_optci";
 
@@ -113,11 +148,16 @@ TEST( NESTED_PHASES, Positive ) {
 
   add_config_information( root );
 
+  root.print();
+
   std::vector<std::string> paths;
   root.execute(paths);
 
-}
+  auto phases = root.count_runnable_phases();
 
+  std::cout << "runnable phases " << phases << std::endl;
+
+}
 
 
 
