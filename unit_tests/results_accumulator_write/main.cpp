@@ -35,13 +35,23 @@ TEST( AnalysisTest, Positive ){
 
   auto root = build_yaml_root();
 
-  for (int i = 0; i < 2; ++i){
-      
+  for (int i = 0; i < 3; ++i){
     std::stringstream str;
     str << "SOCKETS=1" << endl;
-    str << "CORES=" << i+1 << endl;
+    str << "CORES_PER_SOCKET=" << i+1 << endl;
     str << "THREADS_PER_CORE=1" << endl;
     str << "TIME=" << 1.0/(i+1) << endl;
+
+    std::istringstream istr( str.str() );
+
+    root = add_yaml_configuration_from_stream( root, str );
+  }
+  for (int s = 1; s < 3; ++s){
+    std::stringstream str;
+    str << "SOCKETS=" << s+1 << endl;
+    str << "CORES_PER_SOCKET=1" << endl;
+    str << "THREADS_PER_CORE=1" << endl;
+    str << "TIME=" << (1.0/(s+1))+0.1 << endl;
 
     std::istringstream istr( str.str() );
 
