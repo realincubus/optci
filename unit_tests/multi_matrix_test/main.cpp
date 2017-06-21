@@ -1,45 +1,30 @@
 
-#include <numeric>
-#include <iostream>
-#include <memory>
-#include <chrono>
+#include <optci.h>
+#include <gtest/gtest.h>
+#include <fstream>
+#include <experimental/filesystem>
 
 using namespace std;
-using namespace std::chrono;
+namespace fs = std::experimental::filesystem;
 
-int main(int argc, char** argv){
+TEST( MULT_MATRIX, Positive ) {
+  int optci_argc = 2;
+  char* optci_argv[2];
 
-  auto size = stoi(argv[1]);
-  auto max_iterations = stoi(argv[2]);
+  // TODO extract function in main code to prepare environment
+  try {
+    fs::remove("source.this");
+  }catch(...) {
 
-  unsigned int X = size;
-  unsigned int Y = size;
-  unique_ptr<double[]> matrix (new double[Y*X]); 
+  }
+  try {
+    fs::remove_all("artifacts");
+  }catch(...) {
 
-  unique_ptr<double[]> inputVector (new double[X]);
-  unique_ptr<double[]> targetVector (new double[Y]);
-
-  std::iota(&matrix[0],&matrix[Y*X],0);
-  std::iota(&inputVector[0],&inputVector[X],0);
-  std::fill(&targetVector[0], &targetVector[Y], 0); 
-
-  auto start = std::chrono::high_resolution_clock::now();
-
-  int iterations = max_iterations;
-
-  while( iterations-- ) {
-    for ( int y = 0; y < Y; y++ ){
-      for ( int x = 0; x < X; x++ ) { 
-        targetVector[y] += matrix[x+y*X] * inputVector[x];
-      }   
-    }   
   }
 
-  auto end = std::chrono::high_resolution_clock::now();
+  optci_argv[0] = "../../bin_optci";
+  optci_argv[1] = "config";
 
-  auto ms = std::chrono::duration_cast<milliseconds>(end - start).count();
-  std::cout << "one mult takes " << ms / max_iterations << " ms val " << targetVector[0] << std::endl;
-  std::cout << "total time " << ms << " ms" << std::endl;
-
-  return 0;
+  optci_run(optci_argc, optci_argv); 
 }
