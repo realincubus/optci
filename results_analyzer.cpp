@@ -78,16 +78,15 @@ void for_each_axis_named( NodeRef config, std::string name, std::function<void(N
 }
 
 auto get_axis_value( NodeRef axis ) {
-  std::cout << __PRETTY_FUNCTION__ << std::endl;
   auto [ name, value ] = get_name_and_value( axis );
   return value; 
 }
 
 using xy_pair = std::pair<std::string,std::string>;
-std::map<std::string,std::set<xy_pair>> possible_configs;
+using config_map = std::map<std::string,std::set<xy_pair>>; 
 
-void compare_configs( NodeRef config_a, NodeRef config_b, std::string minimize_axis = "TIME" ) {
-  std::cout << "comparing configs "  << std::endl; 
+void compare_configs( NodeRef config_a, NodeRef config_b, config_map& possible_configs, std::string minimize_axis = "TIME" ) {
+  //std::cout << "comparing configs "  << std::endl; 
   for_each_axis( config_a, [&](NodeRef axis){ 
 
     bool is_difference = false;
@@ -108,7 +107,7 @@ void compare_configs( NodeRef config_a, NodeRef config_b, std::string minimize_a
       auto [ axis_name, axis_a_value ] = get_name_and_value( axis );
       // check for change in this axis
       if ( is_axis_value_different_in( config_b, axis_name, axis_a_value ) ) { 
-        std::cout << "there is no change but in this axis (" << axis_name << ")" << std::endl;
+        //std::cout << "there is no change but in this axis (" << axis_name << ")" << std::endl;
 
         std::string axis_a_time_value;
         std::string axis_b_time_value;
@@ -164,6 +163,20 @@ namespace one_d_function_analysis{
     return adjacent_compare( v, std::less_equal<U>() );
   }
 
+template < typename U, typename V >
+  auto maximum_combination( std::vector<std::pair<U,V>>& v ){
+    std::pair<U,V>* ret = nullptr;
+    V max = std::numeric_limits<V>::lowest();
+    for( auto& pair : v ){
+      auto [x,y] = pair;
+      if ( y > max ) {
+        ret = &pair;
+        max = y;
+      }
+    }
+    return ret;
+  }
+
   template < typename U, typename V >
   auto minimum_combination( std::vector<std::pair<U,V>>& v ){
     std::pair<U,V>* ret = nullptr;
@@ -178,18 +191,42 @@ namespace one_d_function_analysis{
     return ret;
   }
 
+  template < typename U, typename V >
+  auto no_change( std::vector<std::pair<U,V>>& v, double relative_tolerance ){
+    auto min = minimum_combination( v );
+    auto max = maximum_combination( v );
+    
+    if ( min && max ) {
+      auto minv = min->second;
+      auto maxv = max->second;
+      auto distance = maxv-minv;
+      //std::cout << "distance " << distance << " absolute tolerance " << relative_tolerance * maxv << std::endl;
+      if ( distance < (relative_tolerance * maxv) ) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+
 }
   
-void analyze_configuration_matrix( YAML::Node root ){
+// the result for each axis
+struct AnalysisResult {
+  
+};
 
+void analyze_configuration_matrix( YAML::Node root ){
 
   // TODO compare configurations with each other 
   //      search along the axis
+  config_map possible_configs;
 
   for_each_configuration( root, [&]( const YAML::Node& config_a){
     for_each_configuration( root, [&]( const YAML::Node& config_b){
       if ( config_a.is( config_b ) ) return;
-      compare_configs( config_a, config_b );
+      compare_configs( config_a, config_b, possible_configs );
     });
   });
 
@@ -234,6 +271,11 @@ void analyze_configuration_matrix( YAML::Node root ){
     
     if ( auto best = one_d_function_analysis::minimum_combination( xy_value_row ) ) {
       std::cout << "best combination is " << best->first << " " << best->second << std::endl;
+    }
+
+    double relative_tolerance = 0.05;
+    if ( one_d_function_analysis::no_change( xy_value_row, relative_tolerance ) ) {
+      std::cout << "the changes that are caused by axis " << axis_set.first << " do not result in a TIME change tolerance = " << relative_tolerance << std::endl;
     }
 
   }
