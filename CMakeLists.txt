@@ -26,6 +26,11 @@ TARGET_LINK_LIBRARIES( bin_perf_data_converter stdc++fs )
 
 ADD_EXECUTABLE( bin_ra results_accumulator.cpp  results_analyzer.cpp )
 TARGET_LINK_LIBRARIES( bin_ra yaml-cpp )
+
+ADD_EXECUTABLE( bin_rana results_analyzer.cpp )
+TARGET_LINK_LIBRARIES( bin_rana yaml-cpp )
+set_target_properties( bin_rana PROPERTIES COMPILE_FLAGS "-DBUILDING_EXE=1")
+
 ADD_LIBRARY( ra SHARED results_accumulator.cpp results_analyzer.cpp )
 TARGET_LINK_LIBRARIES( ra yaml-cpp )
 set_target_properties( ra PROPERTIES COMPILE_FLAGS "-DBUILDING_LIB=1")

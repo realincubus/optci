@@ -85,10 +85,36 @@ auto get_axis_value( NodeRef axis ) {
 using xy_pair = std::pair<std::string,std::string>;
 using config_map = std::map<std::string,std::set<xy_pair>>; 
 
+std::string make_config_name( NodeRef config, NodeRef base_axis, std::string minimize_axis = "TIME" ) {
+  using namespace std;
+  auto [ name, value ] = get_name_and_value(base_axis);
+  std::string ret = name + "[";
+  bool first = true;
+  for_each_axis_but( config, base_axis, [&](NodeRef axis){ 
+    auto [ name, value ] = get_name_and_value( axis );
+    if ( name == minimize_axis ) return; 
+    if ( first ) {
+      first = false;
+    }else{
+      ret += ", ";
+    }
+    ret += name + "="s + value;
+
+  });
+
+  ret += "]";
+  return ret;
+}
+
 void compare_configs( NodeRef config_a, NodeRef config_b, config_map& possible_configs, std::string minimize_axis = "TIME" ) {
   //std::cout << "comparing configs "  << std::endl; 
   for_each_axis( config_a, [&](NodeRef axis){ 
 
+    auto [ axis_name, axis_a_value ] = get_name_and_value( axis );
+
+    if ( axis_name == minimize_axis ) return;
+
+    //std::cout << "axis " << axis_name << std::endl;
     bool is_difference = false;
 
     // TODO loop over all other axis in config_a and compare them with config_b -> they have to have identical values
@@ -98,37 +124,43 @@ void compare_configs( NodeRef config_a, NodeRef config_b, config_map& possible_c
       auto axis_a_name = std::get<0>(axis_a_name_and_value);
       auto axis_a_value = std::get<1>(axis_a_name_and_value);
       if (is_axis_value_different_in( config_b, axis_a_name, axis_a_value ) ){
+        //std::cout << "  differs " << axis_a_name << " in other conf " << std::endl;
         is_difference = true;
       }
       
     });
 
     if ( is_difference == false ) {
-      auto [ axis_name, axis_a_value ] = get_name_and_value( axis );
+      //std::cout << "  no difference collecting to " << axis_name << std::endl;
+      //std::cout << config_a << std::endl;
+      //std::cout << std::endl;
+      //std::cout << config_b << std::endl;
       // check for change in this axis
-      if ( is_axis_value_different_in( config_b, axis_name, axis_a_value ) ) { 
-        //std::cout << "there is no change but in this axis (" << axis_name << ")" << std::endl;
+      //if ( is_axis_value_different_in( config_b, axis_name, axis_a_value ) ) { 
+      //std::cout << "there is no change but in this axis (" << axis_name << ")" << std::endl;
 
-        std::string axis_a_time_value;
-        std::string axis_b_time_value;
-        for_each_axis_named( config_a, "TIME", [&](NodeRef axis){ 
-          axis_a_time_value = get_axis_value( axis ); 
-        });
+      std::string axis_a_time_value;
+      std::string axis_b_time_value;
+      for_each_axis_named( config_a, "TIME", [&](NodeRef axis){ 
+        axis_a_time_value = get_axis_value( axis ); 
+      });
 
-        for_each_axis_named( config_b, "TIME", [&](NodeRef axis){ 
-          axis_b_time_value = get_axis_value( axis ); 
-        });
+      for_each_axis_named( config_b, "TIME", [&](NodeRef axis){ 
+        axis_b_time_value = get_axis_value( axis ); 
+      });
 
-        std::string axis_b_value;
-        for_each_axis_named( config_b, axis_name, [&](NodeRef axis){ 
-          axis_b_value = get_axis_value( axis ); 
-        });
+      std::string axis_b_value;
+      for_each_axis_named( config_b, axis_name, [&](NodeRef axis){ 
+        axis_b_value = get_axis_value( axis ); 
+      });
 
-        possible_configs[axis_name].emplace( axis_a_value, axis_a_time_value ); 
-      }
+      auto name = make_config_name( config_a, axis );
+      possible_configs[name].emplace( axis_a_value, axis_a_time_value ); 
+      //}
     }
 
   });
+  //std::cout << std::endl;
 }
 
 namespace one_d_function_analysis{
@@ -278,21 +310,20 @@ void analyze_configuration_matrix( YAML::Node root ){
       std::cout << "the changes that are caused by axis " << axis_set.first << " do not result in a TIME change tolerance = " << relative_tolerance << std::endl;
     }
 
+    std::cout << std::endl;
+
   }
 
 }
 
 
+#if BUILDING_EXE 
+int main(int argc, char** argv){
+  
+  YAML::Node root = YAML::LoadFile(argv[1]);
 
+  analyze_configuration_matrix( root );
 
-
-
-
-
-
-
-
-
-
-
-
+  return 0;
+}
+#endif

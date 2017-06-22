@@ -3,12 +3,12 @@
 
 # TODO add tx !!!!!!
 function check_network_load {
-  echo "check network load"
+  #echo "check network load"
 
   MAX_PACKETS=100
 
   interfaces=$(cd /sys/class/net; find . -maxdepth 1 | awk -F "./" '{print $2}' )
-  echo "interfaces $interfaces"
+  #echo "interfaces $interfaces"
 
   load_ok="0"
   declare -a begin_rx
@@ -23,7 +23,7 @@ function check_network_load {
 
     ctr=0
     for interface in $interfaces; do
-      echo "interface $interface"
+      #echo "interface $interface"
       begin_rx[ctr]=$(cat /sys/class/net/$interface/statistics/rx_packets)
       ctr=$((ctr+1))  
     done
@@ -32,14 +32,14 @@ function check_network_load {
 
     ctr=0
     for interface in $interfaces; do
-      echo "interface $interface"
+      #echo "interface $interface"
       end_rx[ctr]=$(cat /sys/class/net/$interface/statistics/rx_packets)
-      echo begin_rx $begin_rx[$interface] end_rx $end_rx[$interface]  
+      #echo begin_rx $begin_rx[$interface] end_rx $end_rx[$interface]  
 
-      echo "${end_rx[$ctr]} - ${begin_rx[$ctr]} > $MAX_PACKETS"
+      #echo "${end_rx[$ctr]} - ${begin_rx[$ctr]} > $MAX_PACKETS"
       load=$(echo "${end_rx[$ctr]} - ${begin_rx[$ctr]} > $MAX_PACKETS" | bc -l)
 
-      echo "load $load"
+      #echo "load $load"
       if [[ $load == "1" ]]; then
         load_ok="0"
         echo "network load is still to high"
@@ -49,13 +49,13 @@ function check_network_load {
   
   done
 
-  echo "network load is ok"
+  #echo "network load is ok"
+  echo -e "\e[32mNetwork Load -- Ok\e[0m"
 }
 
 export -f check_network_load
 
 function check_system_load {
-  echo "check system load"
 
   MAX_LOAD_1="0.10"
   load_ok="0"
@@ -68,6 +68,7 @@ function check_system_load {
     fi
     sleep 1
   done
+  echo -e "\e[32mSystem Load -- Ok\e[0m"
 }
 
 export -f check_system_load
@@ -127,12 +128,13 @@ function check_disk_load {
         echo "disk write load is still to high. write i/os $ios"
       fi
 
-      echo "disk $disk $read_load $write_load"
+      #echo "disk $disk $read_load $write_load"
 
       ctr=$((ctr+1))  
     done
   
   done
+  echo -e "\e[32mDisk Load -- Ok\e[0m"
 }
 
 export -f check_disk_load
@@ -173,13 +175,13 @@ function drop_caches {
 export -f drop_caches
 
 function governor_set_performance {
-  cpupower frequency-set -g performance
+  cpupower frequency-set -g performance > /dev/null
 }
 
 export -f governor_set_performance
 
 function governor_set_powersave {
-  cpupower frequency-set -g powersave
+  cpupower frequency-set -g powersave > /dev/null
 }
 
 export -f governor_set_powersave
@@ -272,4 +274,4 @@ function OPTCI_EXPORT {
 
 export -f OPTCI_EXPORT
 
-
+export OPTCI_ACCUMULATE_RESULT=bin_ra

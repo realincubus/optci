@@ -1,6 +1,5 @@
 #!/bin/bash 
 
-echo "sourcing $1"
 . $1
 
 BASE=$PWD
