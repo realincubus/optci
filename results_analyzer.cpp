@@ -275,39 +275,52 @@ void analyze_configuration_matrix( YAML::Node root ){
     std::cout << "for axis: " << axis_set.first << std::endl;
     for( auto& config : sorted_configs ){
       auto& [a,b] = config;
-      std::cout << a << " " << b << " " << " " << std::endl;    
+      std::cout << a << " " << b << std::endl;    
     }
     std::cout << "---" << std::endl;
 
-    // TODO check that first dimension is numeric 
+    bool is_numeric = true;
+    // TODO check that the first dimension is numeric 
+    for( auto&& config : sorted_configs ){
+      try {
+        stoi(config.first);
+      }catch (...) {
+        is_numeric = false;
+        break;
+      }
+    }
      
     // TODO check that second dimension is numeric
-    
-    // convert to simple row of values
-    std::vector<double> y_value_row;
-    for( auto&& config : sorted_configs ){
-      auto& [a,b] = config;
-      y_value_row.push_back( stod(b) ); 
-    }
-    
-    if ( one_d_function_analysis::is_monotonically_decreasing( y_value_row ) ) {
-      // TODO replace CORES with the variable from a after shrinking to another data structure
-      std::cout << "if " << axis_set.first << " are increased TIME also falls monotonically" << std::endl;
-    }
+
+    if ( !is_numeric ) continue;
 
     std::vector<std::pair<int,double>> xy_value_row;
     for( auto&& config : sorted_configs ){
       auto& [a,b] = config;
       xy_value_row.emplace_back( stoi(a),stod(b) ); 
     }
-    
-    if ( auto best = one_d_function_analysis::minimum_combination( xy_value_row ) ) {
-      std::cout << "best combination is " << best->first << " " << best->second << std::endl;
-    }
+
 
     double relative_tolerance = 0.05;
     if ( one_d_function_analysis::no_change( xy_value_row, relative_tolerance ) ) {
       std::cout << "the changes that are caused by axis " << axis_set.first << " do not result in a TIME change tolerance = " << relative_tolerance << std::endl;
+    }else{
+      
+      if ( auto best = one_d_function_analysis::minimum_combination( xy_value_row ) ) {
+        std::cout << "best combination is " << best->first << " " << best->second << std::endl;
+      }
+
+      // convert to simple row of values
+      std::vector<double> y_value_row;
+      for( auto&& config : sorted_configs ){
+        auto& [a,b] = config;
+        y_value_row.push_back( stod(b) ); 
+      }
+      
+      if ( one_d_function_analysis::is_monotonically_decreasing( y_value_row ) ) {
+        // TODO replace CORES with the variable from a after shrinking to another data structure
+        std::cout << "if " << axis_set.first << " are increased TIME also falls monotonically" << std::endl;
+      }
     }
 
     std::cout << std::endl;
