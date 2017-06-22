@@ -115,6 +115,44 @@ TEST( ADD_COFIG_AUTO, Positive ) {
 
 }
 
+TEST( ADD_COFIG_AUTO_EVEN, Positive ) {
+
+  // TODO extract function in main code to prepare environment
+  try {
+    fs::remove("source.this");
+  }catch(...) {
+
+  }
+  try {
+    fs::remove_all("artifacts");
+  }catch(...) {
+
+  }
+
+  // TODO remove this intialization stuff ;
+  fs::path p = "../../bin_optci";
+
+  auto install_dir = canonical(p).remove_filename();
+  std::cout << "install_dir " << install_dir << std::endl;
+  g_base_dir = install_dir;
+
+  fs::path hook_folder = "config";
+  fs::path phases_folder = hook_folder / "phases";
+
+  g_files_folder = canonical(hook_folder) / "files";
+  g_config_file = canonical(hook_folder / "config_auto_even.yaml" );
+
+  Phase root("config/phases");
+
+  parse_folder( root.sub_phases, phases_folder );
+
+  add_config_information( root );
+
+  std::vector<std::string> paths;
+  root.execute(paths);
+
+}
+
 TEST( NESTED_PHASES, Positive ) {
 
   // TODO extract function in main code to prepare environment

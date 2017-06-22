@@ -83,26 +83,66 @@ void handle_once( const YAML::Node& node, Phase& root )
 
     if ( m.size() == 0 ) {
       auto val = m.as<std::string>();
-      if ( val == "auto" ) {
-        auto [sockets, cores_per_socket, threads_per_core] = get_topology();
+
+      std::array<std::string,4> auto_types = {
+        "auto",
+        "auto_even",
+        "auto_odd",
+        "auto_pow2"
+      };
+
+      if ( std::find( begin(auto_types), end(auto_types), val ) != auto_types.end() ) {
+        auto [s, c, t] = get_topology();
+        // stupid reassign due to limitiation of structured bindings
+        auto sockets = s;
+        auto cores_per_socket = c;
+        auto threads_per_core = t;
+
         Axis socket_axis("SOCKETS");
-        for (int s = 0; s < sockets; s++){
-          socket_axis.add_value( to_string(s+1) );
-        }
-        matrix.add_axis( socket_axis );
-
         Axis cores_per_socket_axis("CORES_PER_SOCKET");
-        for (int c = 0; c < cores_per_socket; c++){
-          cores_per_socket_axis.add_value( to_string(c+1) );
-        }
-
-        matrix.add_axis( cores_per_socket_axis );
-
         Axis threads_per_core_axis("THREADS_PER_CORE");
-        for (int t = 0; t < threads_per_core; t++){
-          threads_per_core_axis.add_value( to_string(t+1) );
+
+        auto add_values = [&]( auto p ){ 
+          for (int s = 0; s < sockets; s++){
+            if ( !p(s+1) ) continue;
+            socket_axis.add_value( to_string(s+1) );
+          }
+
+          for (int c = 0; c < cores_per_socket; c++){
+            if ( !p(c+1) ) continue;
+            cores_per_socket_axis.add_value( to_string(c+1) );
+          }
+
+          for (int t = 0; t < threads_per_core; t++){
+            if ( !p(t+1) ) continue;
+            threads_per_core_axis.add_value( to_string(t+1) );
+          }
+        };
+
+
+        auto is_dont_care = [](auto a){ return true; };
+        auto is_even = [](auto a){ return a % 2 == 0; };
+        auto is_odd = [](auto a){ return a % 2 == 1; };
+        auto is_pow2 = [](auto a){ return (a & (a - 1)) == 0; };
+
+        if ( val == "auto" ) {
+          add_values( is_dont_care );
         }
 
+        if ( val == "auto_even" ) {
+          add_values( is_even );
+        }
+
+        if ( val == "auto_odd" ) {
+          add_values( is_odd );
+        }
+
+        if ( val == "auto_pow2" ) {
+          add_values( is_pow2 );
+        }
+
+        matrix.add_axis( socket_axis );
+        matrix.add_axis( cores_per_socket_axis );
         matrix.add_axis( threads_per_core_axis );
       }
     }else{

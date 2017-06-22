@@ -1,0 +1,2 @@
+scaling_phases: [ "config/phases/001_example_phase", "config/phases/002_example_phase" ]
+matrix: auto_even
