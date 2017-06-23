@@ -5,6 +5,7 @@
 #include <iostream>
 #include <functional>
 #include <regex>
+#include <fstream>
 
 using UnaryFunction = std::function<void( const YAML::Node&)>;
 using NodeRef = const YAML::Node&;
@@ -83,64 +84,9 @@ auto get_axis_value( NodeRef axis ) {
   return value; 
 }
 
+
 using XYPair = std::pair<std::string,std::string>;
-
-struct AxisConfiguration {
-  std::string name;
-  std::vector<std::pair<std::string,std::string>> manifestation;
-
-  std::string to_string() const{
-    using namespace std;
-    std::string ret;
-    ret = name + "[";
-    bool first = true;
-    for( auto& [ key, value ] : manifestation ){
-      if ( first ) {
-        first = false;
-      }else{
-        ret += ", ";
-      }
-      ret += key + "="s + value;
-    }
-    ret += "]";
-    return ret;
-  }
-
-
-  
-};
-
-auto operator < ( const AxisConfiguration& lhs, const AxisConfiguration& rhs){
-  return lhs.to_string() < rhs.to_string();
-}
-
-auto& operator << ( std::ostream& rhs, AxisConfiguration lhs){
-  rhs << lhs.to_string();
-  return rhs;
-}
-
 using ConfigMap = std::map<AxisConfiguration,std::set<XYPair>>; 
-
-std::string make_config_name( NodeRef config, NodeRef base_axis, std::string minimize_axis = "TIME" ) {
-  using namespace std;
-  auto [ name, value ] = get_name_and_value(base_axis);
-  std::string ret = name + "[";
-  bool first = true;
-  for_each_axis_but( config, base_axis, [&](NodeRef axis){ 
-    auto [ name, value ] = get_name_and_value( axis );
-    if ( name == minimize_axis ) return; 
-    if ( first ) {
-      first = false;
-    }else{
-      ret += ", ";
-    }
-    ret += name + "="s + value;
-
-  });
-
-  ret += "]";
-  return ret;
-}
 
 AxisConfiguration make_axis_configuration( NodeRef config, NodeRef base_axis, std::string minimize_axis = "TIME" ) {
   using namespace std;
@@ -206,7 +152,6 @@ void compare_configs( NodeRef config_a, NodeRef config_b, ConfigMap& possible_co
         axis_b_value = get_axis_value( axis ); 
       });
 
-      auto name = make_config_name( config_a, axis );
       auto axis_configuration = make_axis_configuration( config_a, axis );
       possible_configs[axis_configuration].emplace( axis_a_value, axis_a_time_value ); 
       //}
@@ -296,13 +241,90 @@ template < typename U, typename V >
 
 
 }
-  
-// the result for each axis
-struct AnalysisResult {
-  
-};
 
-void analyze_configuration_matrix( YAML::Node root, std::string target_axis, std::string filter ){
+void do_axis_analysis ( AxisAnalysisResult& analysis_result ){
+  
+  std::sort( begin(analysis_result.sorted_configs), end(analysis_result.sorted_configs), [](auto& a, auto& b){ 
+      return std::get<0>(a) < std::get<0>(b) ; 
+  });
+
+
+  bool is_numeric = true;
+  // check that the first dimension is numeric 
+  // TODO check if double works to
+  for( auto&& config : analysis_result.sorted_configs ){
+    try {
+      stoi(config.first);
+    }catch (...) {
+      is_numeric = false;
+      break;
+    }
+  }
+   
+  // TODO check that second dimension is numeric
+
+  if ( !is_numeric ) return;
+
+  std::vector<std::pair<int,double>> xy_value_row;
+  for( auto& config : analysis_result.sorted_configs ){
+    auto& [a,b] = config;
+    xy_value_row.emplace_back( stoi(a),stod(b) ); 
+  }
+
+
+  double relative_tolerance = 0.05;
+
+  analysis_result.no_change = one_d_function_analysis::no_change( xy_value_row, relative_tolerance );
+
+  if ( !analysis_result.no_change ) {
+    
+    analysis_result.best = one_d_function_analysis::minimum_combination( xy_value_row );
+
+    // convert to simple row of values
+    std::vector<double> y_value_row;
+    for( auto&& config : analysis_result.sorted_configs ){
+      auto& [a,b] = config;
+      y_value_row.push_back( stod(b) ); 
+    }
+    
+    analysis_result.monotonic_decrease = one_d_function_analysis::is_monotonically_decreasing( y_value_row );
+  }
+
+
+}
+
+
+void AxisAnalysisResult::report ( std::ostream& out ){
+
+  std::cout << "for axis: " << configuration << std::endl;
+  for( auto& config : sorted_configs ){
+    auto& [a,b] = config;
+    std::cout << a << " " << b << std::endl;    
+  }
+  std::cout << "---" << std::endl;
+
+  if ( no_change ) {
+    // TODO refactor out 
+    double relative_tolerance = 0.05;
+    std::cout << "the changes that are caused by axis " << configuration << " do not result in a TIME change tolerance = " << relative_tolerance << std::endl;
+  }else{
+
+    if ( best ) {
+      std::cout << "best combination is " << best->first << " " << best->second << std::endl;
+    }
+
+    if ( monotonic_decrease ) {
+      std::cout << "if " << configuration << " is increased TIME also falls monotonically" << std::endl;
+    }
+  }
+
+  std::cout << std::endl;
+
+}
+
+std::vector<AxisAnalysisResult> analyze_configuration_matrix( YAML::Node root, std::string target_axis, std::string filter ){
+
+  std::vector<AxisAnalysisResult> ret;
 
   // TODO compare configurations with each other 
   //      search along the axis
@@ -318,84 +340,134 @@ void analyze_configuration_matrix( YAML::Node root, std::string target_axis, std
 
   for( auto&& axis_set : possible_configs ){
 
-
     auto axis_configuration = axis_set.first;
-    auto axis_name = axis_configuration.name;
+
+    AxisAnalysisResult analysis_result;
+    analysis_result.configuration = axis_configuration;
 
     // apply filter to not analyze things that are not interesting
     if ( filter != "" ){
       // TODO make customizable regex type
       std::regex filter_expr(filter, std::regex::grep);
-      // TODO remove after axis name rewrite 
-      if ( !std::regex_match( axis_name, filter_expr ) ) {
+      if ( !std::regex_match( analysis_result.configuration.name, filter_expr ) ) {
         continue;
       }
     }
-    
-    std::vector<XYPair> sorted_configs;
+
     for( auto&& config : axis_set.second ){
-      sorted_configs.push_back( config );
+      analysis_result.sorted_configs.push_back( config );
     }
+
+    do_axis_analysis( analysis_result );
     
-    std::sort( begin(sorted_configs), end(sorted_configs), [](auto& a, auto& b){ return std::get<0>(a) < std::get<0>(b) ; } );
-
-    std::cout << "for axis: " << axis_configuration << std::endl;
-    for( auto& config : sorted_configs ){
-      auto& [a,b] = config;
-      std::cout << a << " " << b << std::endl;    
-    }
-    std::cout << "---" << std::endl;
-
-    bool is_numeric = true;
-    // TODO check that the first dimension is numeric 
-    for( auto&& config : sorted_configs ){
-      try {
-        stoi(config.first);
-      }catch (...) {
-        is_numeric = false;
-        break;
-      }
-    }
-     
-    // TODO check that second dimension is numeric
-
-    if ( !is_numeric ) continue;
-
-    std::vector<std::pair<int,double>> xy_value_row;
-    for( auto& config : sorted_configs ){
-      auto& [a,b] = config;
-      xy_value_row.emplace_back( stoi(a),stod(b) ); 
-    }
-
-
-    double relative_tolerance = 0.05;
-    if ( one_d_function_analysis::no_change( xy_value_row, relative_tolerance ) ) {
-      std::cout << "the changes that are caused by axis " << axis_name << " do not result in a TIME change tolerance = " << relative_tolerance << std::endl;
-    }else{
-      
-      if ( auto best = one_d_function_analysis::minimum_combination( xy_value_row ) ) {
-        std::cout << "best combination is " << best->first << " " << best->second << std::endl;
-      }
-
-      // convert to simple row of values
-      std::vector<double> y_value_row;
-      for( auto&& config : sorted_configs ){
-        auto& [a,b] = config;
-        y_value_row.push_back( stod(b) ); 
-      }
-      
-      if ( one_d_function_analysis::is_monotonically_decreasing( y_value_row ) ) {
-        // TODO replace CORES with the variable from a after shrinking to another data structure
-        std::cout << "if " << axis_name << " are increased TIME also falls monotonically" << std::endl;
-      }
-    }
-
-    std::cout << std::endl;
-
+    ret.emplace_back( analysis_result );
   }
 
+  return ret;
 }
 
+using data2d = std::vector<std::vector<double>> ;
+using data3d = std::vector<data2d>;
+
+void make_2d_matrix_plot( std::ostream& out, data2d& data ){
+  using namespace std;
+  static int map_ctr = 0;
+  std::string map_name = "$map_"s + to_string(map_ctr++);
+  out << map_name << "<< EOD" << std::endl;
+  for( auto& plot_data1d : data ){
+    for( auto& speedup : plot_data1d ){
+      out << speedup << " ";
+    }
+    out << std::endl;
+  }
+  out << "EOD" << std::endl;
+  out << "set view map" << endl;
+  out << "splot '" << map_name << "' matrix with image" << std::endl;
+}
+
+void make_gnuplot_multiplot( data3d& data ){
+
+  std::ofstream out("outfile.plt");
+
+  out << "set terminal png" << std::endl;
+  out << "set palette defined ( 0 \"red\", 1 \"blue\" )" << std::endl;
+  out << "set multiplot layout " << data.size() << ",1 margins 0.1,0.98,0.1,0.98 spacing 0.08,0.08" << std::endl;
+
+  for( auto& plot_data2d : data ){
+    // TODO insert the multiplot origin and size calculation here !! not needed right now
+    make_2d_matrix_plot( out, plot_data2d );
+  }
+  out << "unset multiplot" << std::endl;
+}
+
+// TODO everything needs to be rewritten to allow hypercubes
+// TODO axis names need to be carried on to gnuplot
+void generate_gnuplot_matrix_plot( AnalysisResult& result, std::string filter ){
+
+  data3d plot_data3d;
+
+  int max_size[3] = {
+    std::numeric_limits<int>::min(),
+    std::numeric_limits<int>::min(),
+    std::numeric_limits<int>::min()
+  };
+
+  // calculate the minimum bounding hypercube dimensions
+  for( auto& axis_result : result ){
+    std::regex filter_expr(filter, std::regex::grep);
+    if ( std::regex_match( axis_result.configuration.name, filter_expr ) ) {
+      int ctr = 0;
+
+      for( auto& element : axis_result.configuration.manifestation ){
+        int addr = stoi(element.second);
+        if ( addr > max_size[ctr] ) {
+          max_size[ctr] = addr;
+        }
+        ctr++;
+      }
+    }
+  }
+
+
+  plot_data3d.resize( max_size[0] );
+  for( auto& plot_data2d : plot_data3d ){
+    plot_data2d.resize( max_size[1] ); 
+    for( auto& plot_data1d : plot_data2d ){
+      plot_data1d.resize(max_size[2]);
+    }
+  }
+  
+  for( auto& axis_result : result ){
+    std::regex filter_expr(filter, std::regex::grep);
+    if ( std::regex_match( axis_result.configuration.name, filter_expr ) ) {
+      // all other axis with this name have to have the same configuration
+      // what is the dimensionality of this axis
+      int dimensionality = axis_result.configuration.manifestation.size();
+
+      // TODO generalize
+      double BASE = std::stod(axis_result.sorted_configs[0].second);
+      double CHANGED = std::stod(axis_result.sorted_configs[1].second);
+      double speedup = BASE/CHANGED;
+
+      int ctr = 0;
+      int addr[3];
+
+      for( auto& element : axis_result.configuration.manifestation ){
+        addr[ctr] = stoi(element.second)-1;        
+        ctr++;
+      }
+
+      plot_data3d[addr[0]][addr[1]][addr[2]] = speedup;      
+
+      std::cout << "dimensionality " << dimensionality << std::endl;
+      std::cout << "coordinates " << " follows " << std::endl;
+      std::cout << "speedup " << speedup << std::endl;
+    }
+  }
+   
+  make_gnuplot_multiplot(plot_data3d);
+
+}
 
 #if BUILDING_EXE 
 int main(int argc, char** argv){
@@ -432,7 +504,13 @@ int main(int argc, char** argv){
   
   YAML::Node root = YAML::LoadFile(input_file);
 
-  analyze_configuration_matrix( root, target_axis, filter );
+  auto results = analyze_configuration_matrix( root, target_axis, filter );
+
+  for( auto&& result : results ){
+    result.report( std::cout );
+  }
+
+  generate_gnuplot_matrix_plot( results, ".*TYPE.*" );
 
   return 0;
 }
