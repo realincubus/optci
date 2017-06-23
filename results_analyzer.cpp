@@ -4,6 +4,7 @@
 #include "results_analyzer.hpp"
 #include <iostream>
 #include <functional>
+#include <regex>
 
 using UnaryFunction = std::function<void( const YAML::Node&)>;
 using NodeRef = const YAML::Node&;
@@ -82,8 +83,43 @@ auto get_axis_value( NodeRef axis ) {
   return value; 
 }
 
-using xy_pair = std::pair<std::string,std::string>;
-using config_map = std::map<std::string,std::set<xy_pair>>; 
+using XYPair = std::pair<std::string,std::string>;
+
+struct AxisConfiguration {
+  std::string name;
+  std::vector<std::pair<std::string,std::string>> manifestation;
+
+  std::string to_string() const{
+    using namespace std;
+    std::string ret;
+    ret = name + "[";
+    bool first = true;
+    for( auto& [ key, value ] : manifestation ){
+      if ( first ) {
+        first = false;
+      }else{
+        ret += ", ";
+      }
+      ret += key + "="s + value;
+    }
+    ret += "]";
+    return ret;
+  }
+
+
+  
+};
+
+auto operator < ( const AxisConfiguration& lhs, const AxisConfiguration& rhs){
+  return lhs.to_string() < rhs.to_string();
+}
+
+auto& operator << ( std::ostream& rhs, AxisConfiguration lhs){
+  rhs << lhs.to_string();
+  return rhs;
+}
+
+using ConfigMap = std::map<AxisConfiguration,std::set<XYPair>>; 
 
 std::string make_config_name( NodeRef config, NodeRef base_axis, std::string minimize_axis = "TIME" ) {
   using namespace std;
@@ -106,7 +142,23 @@ std::string make_config_name( NodeRef config, NodeRef base_axis, std::string min
   return ret;
 }
 
-void compare_configs( NodeRef config_a, NodeRef config_b, config_map& possible_configs, std::string minimize_axis = "TIME" ) {
+AxisConfiguration make_axis_configuration( NodeRef config, NodeRef base_axis, std::string minimize_axis = "TIME" ) {
+  using namespace std;
+  auto [ name, value ] = get_name_and_value(base_axis);
+
+  AxisConfiguration ret;
+  ret.name = name;
+  
+  for_each_axis_but( config, base_axis, [&](NodeRef axis){ 
+    auto [ name, value ] = get_name_and_value( axis );
+    if ( name == minimize_axis ) return; 
+    ret.manifestation.emplace_back( name, value);
+  });
+
+  return ret;
+}
+
+void compare_configs( NodeRef config_a, NodeRef config_b, ConfigMap& possible_configs, std::string minimize_axis = "TIME" ) {
   //std::cout << "comparing configs "  << std::endl; 
   for_each_axis( config_a, [&](NodeRef axis){ 
 
@@ -155,7 +207,8 @@ void compare_configs( NodeRef config_a, NodeRef config_b, config_map& possible_c
       });
 
       auto name = make_config_name( config_a, axis );
-      possible_configs[name].emplace( axis_a_value, axis_a_time_value ); 
+      auto axis_configuration = make_axis_configuration( config_a, axis );
+      possible_configs[axis_configuration].emplace( axis_a_value, axis_a_time_value ); 
       //}
     }
 
@@ -249,11 +302,11 @@ struct AnalysisResult {
   
 };
 
-void analyze_configuration_matrix( YAML::Node root ){
+void analyze_configuration_matrix( YAML::Node root, std::string target_axis, std::string filter ){
 
   // TODO compare configurations with each other 
   //      search along the axis
-  config_map possible_configs;
+  ConfigMap possible_configs;
 
   for_each_configuration( root, [&]( const YAML::Node& config_a){
     for_each_configuration( root, [&]( const YAML::Node& config_b){
@@ -264,15 +317,29 @@ void analyze_configuration_matrix( YAML::Node root ){
 
 
   for( auto&& axis_set : possible_configs ){
+
+
+    auto axis_configuration = axis_set.first;
+    auto axis_name = axis_configuration.name;
+
+    // apply filter to not analyze things that are not interesting
+    if ( filter != "" ){
+      // TODO make customizable regex type
+      std::regex filter_expr(filter, std::regex::grep);
+      // TODO remove after axis name rewrite 
+      if ( !std::regex_match( axis_name, filter_expr ) ) {
+        continue;
+      }
+    }
     
-    std::vector<xy_pair> sorted_configs;
+    std::vector<XYPair> sorted_configs;
     for( auto&& config : axis_set.second ){
       sorted_configs.push_back( config );
     }
     
     std::sort( begin(sorted_configs), end(sorted_configs), [](auto& a, auto& b){ return std::get<0>(a) < std::get<0>(b) ; } );
 
-    std::cout << "for axis: " << axis_set.first << std::endl;
+    std::cout << "for axis: " << axis_configuration << std::endl;
     for( auto& config : sorted_configs ){
       auto& [a,b] = config;
       std::cout << a << " " << b << std::endl;    
@@ -295,7 +362,7 @@ void analyze_configuration_matrix( YAML::Node root ){
     if ( !is_numeric ) continue;
 
     std::vector<std::pair<int,double>> xy_value_row;
-    for( auto&& config : sorted_configs ){
+    for( auto& config : sorted_configs ){
       auto& [a,b] = config;
       xy_value_row.emplace_back( stoi(a),stod(b) ); 
     }
@@ -303,7 +370,7 @@ void analyze_configuration_matrix( YAML::Node root ){
 
     double relative_tolerance = 0.05;
     if ( one_d_function_analysis::no_change( xy_value_row, relative_tolerance ) ) {
-      std::cout << "the changes that are caused by axis " << axis_set.first << " do not result in a TIME change tolerance = " << relative_tolerance << std::endl;
+      std::cout << "the changes that are caused by axis " << axis_name << " do not result in a TIME change tolerance = " << relative_tolerance << std::endl;
     }else{
       
       if ( auto best = one_d_function_analysis::minimum_combination( xy_value_row ) ) {
@@ -319,7 +386,7 @@ void analyze_configuration_matrix( YAML::Node root ){
       
       if ( one_d_function_analysis::is_monotonically_decreasing( y_value_row ) ) {
         // TODO replace CORES with the variable from a after shrinking to another data structure
-        std::cout << "if " << axis_set.first << " are increased TIME also falls monotonically" << std::endl;
+        std::cout << "if " << axis_name << " are increased TIME also falls monotonically" << std::endl;
       }
     }
 
@@ -332,10 +399,40 @@ void analyze_configuration_matrix( YAML::Node root ){
 
 #if BUILDING_EXE 
 int main(int argc, char** argv){
-  
-  YAML::Node root = YAML::LoadFile(argv[1]);
 
-  analyze_configuration_matrix( root );
+  // command line argument parsing
+  
+  // data with defaults
+  std::string input_file = "";
+  std::string target_axis = "TIME";
+  std::string filter = "";
+  
+  // parse all switches
+  while ( int opt = getopt(argc, argv, "i:t:f:") ){
+    if ( opt == -1 ) break;
+    switch(opt) {
+    case 'i':{
+        input_file = optarg;
+        break;
+    }
+    case 't':{
+        target_axis = optarg;
+        break;
+    }
+    case 'f':{
+        filter = optarg;
+        break;
+    }
+    default:{
+        fprintf(stderr, "Usage: %s \n",argv[0]);
+        exit(EXIT_FAILURE);
+    }
+      }
+  }
+  
+  YAML::Node root = YAML::LoadFile(input_file);
+
+  analyze_configuration_matrix( root, target_axis, filter );
 
   return 0;
 }

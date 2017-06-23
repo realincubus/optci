@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# compare the content of the env vars
+echo comparing runtime of two codes
+
+bin_rana $RESULTS_OUT -a TYPE 
+
+#rm speedup.txt
+#
+#compare_one $BASE_RUNTIME_0_1  $CHANGED_RUNTIME_0_1 1 
+#compare_one $BASE_RUNTIME_0_6  $CHANGED_RUNTIME_0_6 6
+#compare_one $BASE_RUNTIME_0_8  $CHANGED_RUNTIME_0_8 8
+#compare_one $BASE_RUNTIME_0_12 $CHANGED_RUNTIME_0_12 12
+#
+#compare_one $BASE_RUNTIME_1_1  $CHANGED_RUNTIME_1_1 2
+#compare_one $BASE_RUNTIME_1_6  $CHANGED_RUNTIME_1_6 12
+#compare_one $BASE_RUNTIME_1_8  $CHANGED_RUNTIME_1_8 16
+#compare_one $BASE_RUNTIME_1_12 $CHANGED_RUNTIME_1_12 24
