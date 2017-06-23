@@ -1,0 +1,9 @@
+#!/bin/bash  -xe
+rm -rf optci_example_matrix
+cp -r $FILES/optci_example_matrix optci_example_matrix
+
+rm /tmp/accu
+
+OPTCI_EXPORT CHECKOUT_FOLDER optci_example_matrix
+OPTCI_EXPORT RESULTS_OUT /tmp/accu
+
