@@ -1,5 +1,6 @@
 
-#include <optci.h>
+#include "optci.h"
+
 #include <gtest/gtest.h>
 #include <fstream>
 #include <experimental/filesystem>

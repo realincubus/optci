@@ -1,4 +1,4 @@
-#!/bin/bash  -xe
+#!/bin/bash 
 rm -rf optci_example_matrix
 cp -r $FILES/optci_example_matrix optci_example_matrix
 
