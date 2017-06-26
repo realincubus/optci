@@ -469,6 +469,182 @@ void generate_gnuplot_matrix_plot( AnalysisResult& result, std::string filter ){
 
 }
 
+struct Token {
+  std::string token;
+};
+
+Token make_token( std::string& token ) {
+  std::cout << "parsed token: " << token << std::endl;
+  Token t;
+  t.token = token;
+  token = "";
+  return t;
+}
+
+auto parse_var( std::string str, std::string& token) {
+  int ctr = 0;
+  for( auto& c : str ){
+    ctr++;
+    // numeric
+    if ( std::isalnum( c ) ) {
+      token += c;
+      continue;
+    }
+    break;
+  }
+  return ctr;
+}
+
+int parse_op( std::string str, std::string& token) {
+  int ctr = 0;
+  for( auto& c : str ){
+    ctr++;
+    if ( std::isspace( c ) || std::isalnum(c) ) {
+      break;
+    }
+    token += c;
+  }
+  return ctr;
+
+}
+
+struct ASTNode {
+  enum Type {
+    Divide,
+    Select,
+    Variable,
+    Root
+  };
+  ASTNode( Type _type, Token& _token) :
+    type(_type),
+    t(_token)
+  {
+    std::cout << "new node " << t.token << std::endl; 
+  }
+  Type type;
+  Token t;
+  std::vector<ASTNode*> children;
+};
+void build_ast(std::vector<Token>& tokens, ASTNode* root);
+
+bool handle_divide( std::vector<Token>& tokens, ASTNode* node ) {
+   for( int i = 0 ; i < tokens.size(); i++ ){
+    auto& token = tokens[i];
+    if ( token.token == "/" ) {
+      ASTNode* divide_node = new ASTNode(ASTNode::Divide,token);
+      node->children.push_back( divide_node );
+      // vector for left
+      std::vector<Token> token_left;
+      std::copy( begin(tokens),
+          begin(tokens)+i,
+          std::back_inserter(token_left)
+      );
+      build_ast( token_left, divide_node ); 
+
+      // vector for right
+      std::vector<Token> token_right;
+      std::copy( begin(tokens)+i+1,
+          end(tokens),
+          std::back_inserter(token_right)
+      );
+      build_ast( token_right, divide_node ); 
+      return true;
+    }
+  } 
+  return false;
+}
+
+bool handle_select( std::vector<Token>& tokens, ASTNode* node ) {
+  for( int i = 0 ; i < tokens.size(); i++ ){
+    auto& token = tokens[i];
+    if ( token.token == "=" ) {
+      ASTNode* select_node = new ASTNode(ASTNode::Select,token);
+      node->children.push_back( select_node );
+      // vector for left
+      std::vector<Token> token_left;
+      std::copy( begin(tokens),
+          begin(tokens)+i,
+          std::back_inserter(token_left)
+      );
+      build_ast( token_left, select_node ); 
+
+      // vector for right
+      std::vector<Token> token_right;
+      std::copy( begin(tokens)+i+1,
+          end(tokens),
+          std::back_inserter(token_right)
+      );
+      build_ast( token_right, select_node ); 
+      return true;
+    }
+  }
+  return false;
+}
+
+void build_ast(std::vector<Token>& tokens, ASTNode* root) {
+#if 0
+  std::cout << "tokens" << std::endl;
+  for( auto&& t : tokens ){
+    std::cout << t.token << " ";
+  }
+  std::cout << std::endl;
+#endif
+  if ( !handle_divide( tokens, root ) ){
+    if ( !handle_select( tokens, root ) ) {
+      root->children.push_back( new ASTNode( ASTNode::Variable, tokens.front() ) );
+    }
+  }  
+
+}
+
+void print_ast( ASTNode* root, int indent = 0 ) {
+  for (int i = 0; i < indent; ++i){
+    std::cout << " ";
+  }
+  std::cout << root->t.token << std::endl;
+  for( auto& element : root->children ){
+    print_ast( element, indent + 2);
+  }
+}
+
+auto parse_compare_expr(std::string compare_str ){
+  std::vector<Token> tokens;
+  std::set<char> operators = {'/', '=' };
+  
+  for( int i = 0; i < compare_str.size(); i++ ){
+
+    char c = compare_str[i];
+    std::cout << "c " << c << std::endl;
+
+    if ( std::isalnum( c ) ){
+      std::string token_var;
+      int skip = parse_var( compare_str.substr( i ), token_var ); 
+      i += skip - 1;
+      tokens.emplace_back( make_token( token_var ) );
+      continue;
+    }  
+
+    if ( operators.find( c ) != operators.end() ) {
+      std::string token_op;
+      int skip = parse_op( compare_str.substr( i ), token_op );
+      i += skip - 1;
+      tokens.emplace_back( make_token( token_op ) );
+      continue;
+    }
+  }
+
+  Token root_token;
+  root_token.token = "root";
+  ASTNode root(ASTNode::Root, root_token);
+  build_ast( tokens, &root ) ;
+  print_ast( &root );
+}
+
+auto compare_results( std::vector<AxisAnalysisResult>& results, std::string compare_str ) {
+  
+  return 0;
+}
+
 #if BUILDING_EXE 
 int main(int argc, char** argv){
 
@@ -477,10 +653,11 @@ int main(int argc, char** argv){
   // data with defaults
   std::string input_file = "";
   std::string target_axis = "TIME";
+  std::string compare = "";
   std::string filter = "";
   
   // parse all switches
-  while ( int opt = getopt(argc, argv, "i:t:f:") ){
+  while ( int opt = getopt(argc, argv, "i:t:f:c:") ){
     if ( opt == -1 ) break;
     switch(opt) {
     case 'i':{
@@ -493,6 +670,10 @@ int main(int argc, char** argv){
     }
     case 'f':{
         filter = optarg;
+        break;
+    }
+    case 'c':{
+        compare = optarg;
         break;
     }
     default:{
@@ -510,7 +691,15 @@ int main(int argc, char** argv){
     result.report( std::cout );
   }
 
-  generate_gnuplot_matrix_plot( results, ".*TYPE.*" );
+  if ( compare != "" ) {
+    parse_compare_expr( compare );
+    compare_results( results, compare );
+  }
+
+  if ( filter != "" ) {
+    generate_gnuplot_matrix_plot( results, filter );
+  }
+
 
   return 0;
 }
