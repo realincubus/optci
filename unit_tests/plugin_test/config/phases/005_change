@@ -1,9 +1,13 @@
-#!/bin/bash
+#!/bin/bash -x
 
 echo "change the code here"
 
 # TODO this needs to be infered somehow
 PLUGIN_PATH=/root/ClanPlugin/lib/ClanPlugin.so 
+export LD_LIBRARY_PATH=/root/pluto_install/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/root/pet_install/lib:$LD_LIBRARY_PATH
+
+ldd $PLUGIN_PATH
 
 FIXIT_COMPILER=clang
 FIXIT_COMPILER_FLAGS="-std=c++14 -g -fsyntax-only"
