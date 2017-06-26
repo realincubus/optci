@@ -7,7 +7,7 @@ PLUGIN_PATH=/root/ClanPlugin/lib/ClanPlugin.so
 
 FIXIT_COMPILER=clang
 FIXIT_COMPILER_FLAGS="-std=c++14 -g -fsyntax-only"
-PLUGIN_FLAGS="$FIXIT_COMPILER_FLAGS -Xclang -load -Xclang $PLUGIN_PATH -Xclang -add-plugin -Xclang clan -Xclang -plugin-arg-clan -Xclang -write-cloog-file -Xclang -plugin-arg-clan -Xclang"
+PLUGIN_FLAGS="$FIXIT_COMPILER_FLAGS -Xclang -load -Xclang $PLUGIN_PATH -Xclang -add-plugin -Xclang clan -Xclang -plugin-arg-clan -Xclang -redirect-stdout -Xclang -plugin-arg-clan -Xclang plugin.log -Xclang -plugin-arg-clan -Xclang -redirect-stderr -Xclang -plugin-arg-clan -Xclang plugin.log -Xclang -plugin-arg-clan -Xclang"
 
 OMP_FIXER_FLAGS="$PLUGIN_FLAGS -emit-openmp"
 FIXIT_FLAGS="-Xclang -fixit=opt"
