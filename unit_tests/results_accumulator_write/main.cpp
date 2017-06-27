@@ -152,3 +152,65 @@ TEST( NoChangeTest, Positive ){
 
   analyze_configuration_matrix( root ); 
 }
+
+
+// check that a change in time caused by jitter does
+// not result in a optimization hint
+TEST( DoesScaleTest, Positive ){
+
+  auto root = build_yaml_root();
+
+  // values for non scaling runs
+  for (int i = 0; i < 3; ++i){
+    std::stringstream str;
+    str << "SOCKETS=1" << endl;
+    str << "CORES_PER_SOCKET=" << i+1 << endl;
+    str << "THREADS_PER_CORE=1" << endl;
+    str << "TYPE=BASE" << endl;
+    str << "TIME=" << 1.0 << endl;
+
+    std::istringstream istr( str.str() );
+
+    root = add_yaml_configuration_from_stream( root, str );
+  }
+
+  // values for changed scaling runs
+  for (int i = 0; i < 3; ++i){
+    std::stringstream str;
+    str << "SOCKETS=1" << endl;
+    str << "CORES_PER_SOCKET=" << i+1 << endl;
+    str << "THREADS_PER_CORE=1" << endl;
+    str << "TYPE=CHANGED" << endl;
+    str << "TIME=" << 1.0/(i+1) << endl;
+
+    std::istringstream istr( str.str() );
+
+    root = add_yaml_configuration_from_stream( root, str );
+  }
+  
+  write_yaml_tree( root, std::cout ); 
+
+  Options options;
+
+  options.target_axis = "TIME";
+  options.compare = "TYPE = BASE / TYPE = CHANGED";
+  options.greater = "2";
+
+  auto ret = compare_data( root, options );
+
+  EXPECT_EQ ( ret , EXIT_SUCCESS );
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
