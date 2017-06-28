@@ -482,14 +482,14 @@ int main(int argc, char** argv){
     }
   }
   
-  YAML::Node root = YAML::LoadFile(input_file);
+  YAML::Node root = YAML::LoadFile(options.input_file);
 
 
-  if ( compare != "" ) {
-    compare_data( compare, root );
+  if ( options.compare != "" ) {
+    compare_data( root, options );
   }
 
-  if ( filter != "" ) {
+  if ( options.filter != "" ) {
     auto results = analyze_configuration_matrix( root, options.target_axis, options.filter );
 
     handle_results( results );

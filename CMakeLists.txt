@@ -24,7 +24,7 @@ ADD_EXECUTABLE( bin_perf_data_converter pdc_main.cpp)
 
 TARGET_LINK_LIBRARIES( bin_perf_data_converter stdc++fs )
 
-ADD_EXECUTABLE( bin_ra results_accumulator.cpp  results_analyzer.cpp )
+ADD_EXECUTABLE( bin_ra results_accumulator.cpp  results_analyzer.cpp result_analysis_parser.cpp result_analysis_plot.cpp )
 TARGET_LINK_LIBRARIES( bin_ra yaml-cpp )
 
 # RESULT ANALYSIS
