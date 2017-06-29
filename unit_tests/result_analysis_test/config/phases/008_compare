@@ -3,7 +3,7 @@
 # compare the content of the env vars
 echo comparing runtime of two codes
 
-bin_rana $RESULTS_OUT -a TYPE 
+bin_rana -i $RESULTS_OUT -c "TYPE = BASE / TYPE = CHANGED" -g 2 
 
 #rm speedup.txt
 #
