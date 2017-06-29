@@ -1,0 +1,34 @@
+#!/bin/bash -x
+
+echo "change the code here"
+
+# TODO this needs to be infered somehow
+PLUGIN_PATH=/root/ClanPlugin/lib/ClanPlugin.so 
+export LD_LIBRARY_PATH=/root/pluto_install/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/root/pet_install/lib:$LD_LIBRARY_PATH
+
+ldd $PLUGIN_PATH
+
+FIXIT_COMPILER=clang
+FIXIT_COMPILER_FLAGS="-std=c++14 -g -fsyntax-only"
+PLUGIN_FLAGS="$FIXIT_COMPILER_FLAGS -Xclang -load -Xclang $PLUGIN_PATH -Xclang -add-plugin -Xclang clan -Xclang -plugin-arg-clan -Xclang -redirect-stdout -Xclang -plugin-arg-clan -Xclang plugin.log -Xclang -plugin-arg-clan -Xclang -redirect-stderr -Xclang -plugin-arg-clan -Xclang plugin.log -Xclang -plugin-arg-clan -Xclang"
+
+FIXER_FLAGS="$PLUGIN_FLAGS $EMIT_TYPE"
+FIXIT_FLAGS="-Xclang -fixit=opt"
+
+SOURCE=main.cpp
+
+OMP_FIXIT_COMMAND="$FIXIT_COMPILER $FIXER_FLAGS $FIXIT_COMPILER_FLAGS $FIXIT_FLAGS -c $SOURCE"
+
+echo running $OMP_FIXIT_COMMAND 
+
+$OMP_FIXIT_COMMAND &> plugin.out
+
+if [[ $? -ne 0 ]]; then
+  echo "error optimizing main.cpp"
+fi
+
+# TODO right now it creates main.opt.cpp. change to directly overwrite the original
+mv main.cpp main.orignal.cpp
+mv main.opt.cpp main.cpp
+

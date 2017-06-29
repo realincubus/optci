@@ -1,5 +1,20 @@
 #!/bin/bash
 
+function warning {
+  echo -e "\e[34m"$@"\e[0m" 
+}
+
+export -f warning
+
+function error {
+  echo -e "\e[31m"$@"\e[0m" 
+}
+export -f error
+
+function ok_message {
+  echo -e "\e[32m"$@"\e[0m" 
+}
+export -f ok_message
 
 # TODO add tx !!!!!!
 function check_network_load {
@@ -42,7 +57,7 @@ function check_network_load {
       #echo "load $load"
       if [[ $load == "1" ]]; then
         load_ok="0"
-        echo "network load is still to high"
+        warning "Network load is still to high"
       fi
       ctr=$((ctr+1))  
     done
@@ -50,7 +65,7 @@ function check_network_load {
   done
 
   #echo "network load is ok"
-  echo -e "\e[32mNetwork Load -- Ok\e[0m"
+  ok_message "Network Load -- Ok"
 }
 
 export -f check_network_load
@@ -64,11 +79,11 @@ function check_system_load {
     load_1=$(cat /proc/loadavg | awk '{ print $1 }')
     load_ok=$(echo $load_1'<='$MAX_LOAD_1 | bc -l)
     if [[ $load_ok == "0" ]]; then
-      echo "waiting till load 1($load_1) decreases to $MAX_LOAD_1"
+      warning "waiting till load 1($load_1) decreases to $MAX_LOAD_1"
     fi
     sleep 1
   done
-  echo -e "\e[32mSystem Load -- Ok\e[0m"
+  ok_message "System Load -- Ok"
 }
 
 export -f check_system_load
@@ -116,7 +131,7 @@ function check_disk_load {
       if [[ $read_load == "1" ]]; then
         load_ok="0"
         ios=$(echo "${end_read[$ctr]} - ${begin_read[$ctr]}" | bc)
-        echo "disk read load is still to high. read i/os $ios"
+        warning "Disk read load is still to high. read i/os $ios"
       fi
 
       #echo "${end_write[$ctr]} - ${begin_write[$ctr]} > $MAX_BYTES"
@@ -125,7 +140,7 @@ function check_disk_load {
       if [[ $write_load == "1" ]]; then
         load_ok="0"
         ios=$(echo "${end_write[$ctr]} - ${begin_write[$ctr]}" | bc)
-        echo "disk write load is still to high. write i/os $ios"
+        warning "disk write load is still to high. write i/os $ios"
       fi
 
       #echo "disk $disk $read_load $write_load"
@@ -134,7 +149,7 @@ function check_disk_load {
     done
   
   done
-  echo -e "\e[32mDisk Load -- Ok\e[0m"
+  ok_message "Disk Load -- Ok"
 }
 
 export -f check_disk_load
