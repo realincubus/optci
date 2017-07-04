@@ -1,6 +1,23 @@
-#!/bin/bash  -xe
+#!/bin/bash
+echo !!!!!!!!!!!!!!!!!!!!!
+echo !!!!!!!!!!!!!!!!!!!!!
+echo !!!!!!!!!!!!!!!!!!!!!
+echo $0
+echo !!!!!!!!!!!!!!!!!!!!!
+echo !!!!!!!!!!!!!!!!!!!!!
+echo !!!!!!!!!!!!!!!!!!!!!
+echo !!!!!!!!!!!!!!!!!!!!!
+
+
+
 rm -rf optci_example_matrix
 # TODO for testing a copy is ok
 cp -r $FILES/optci_example_matrix optci_example_matrix
 
+rm /tmp/accu-multi-impl
+
 echo 'export CHECKOUT_FOLDER=optci_example_matrix' > $ARTIFACT/a1
+#OPTCI_EXPORT CHECKOUT_FOLDER optci_example_matrix
+OPTCI_EXPORT SIZE 1000 
+OPTCI_EXPORT RESULTS_OUT /tmp/accu-multi-impl
+OPTCI_EXPORT ITERATIONS 10000

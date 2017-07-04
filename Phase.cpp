@@ -125,6 +125,7 @@ void Phase::run_in_pipe( std::string command, std::ostream& to ) {
 void Phase::run_command( std::vector<std::string>& paths, std::string command ) {
   using namespace std;
 
+  std::cout << "----> " << this->get_name() << " running" << std::endl;
 #if 0
   if ( matrix ) {
     matrix->for_each_configuration( [&](auto configuration){ 

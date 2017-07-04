@@ -12,8 +12,8 @@ int main(int argc, char** argv){
   auto size = stoi(argv[1]);
   auto max_iterations = stoi(argv[2]);
 
-  unsigned int X = size;
-  unsigned int Y = size;
+  int X = size;
+  int Y = size;
   unique_ptr<double[]> matrix (new double[Y*X]); 
 
   unique_ptr<double[]> inputVector (new double[X]);

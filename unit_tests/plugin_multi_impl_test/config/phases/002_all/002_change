@@ -2,6 +2,10 @@
 
 echo "change the code here"
 
+if [[ $EMIT_TYPE == "no-change" ]]; then
+  exit 0
+fi
+
 # TODO this needs to be infered somehow
 PLUGIN_PATH=/root/ClanPlugin/lib/ClanPlugin.so 
 export LD_LIBRARY_PATH=/root/pluto_install/lib:$LD_LIBRARY_PATH

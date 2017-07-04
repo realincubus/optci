@@ -1,0 +1,2 @@
+#!/bin/bash
+bin_rana -i $RESULTS_OUT -c "TYPE = no-change / TYPE = -emit-cilk" -g 2

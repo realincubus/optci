@@ -1,4 +1,4 @@
-#!/bin/bash  -xe
+#!/bin/bash -x
 rm -rf optci_example_matrix
 # TODO for testing a copy is ok
 cp -r $FILES/optci_example_matrix optci_example_matrix
