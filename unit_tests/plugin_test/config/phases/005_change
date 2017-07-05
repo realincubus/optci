@@ -12,7 +12,7 @@ ldd -v $PLUGIN_PATH > ldd.res
 
 FIXIT_COMPILER=clang
 FIXIT_COMPILER_FLAGS="-std=c++14 -g -fsyntax-only"
-PLUGIN_FLAGS="$FIXIT_COMPILER_FLAGS -Xclang -load -Xclang $PLUGIN_PATH -Xclang -add-plugin -Xclang clan -Xclang -plugin-arg-clan -Xclang -redirect-stdout -Xclang -plugin-arg-clan -Xclang plugin.log -Xclang -plugin-arg-clan -Xclang -redirect-stderr -Xclang -plugin-arg-clan -Xclang plugin.log -Xclang -plugin-arg-clan -Xclang"
+PLUGIN_FLAGS="$FIXIT_COMPILER_FLAGS -Xclang -load -Xclang $PLUGIN_PATH -Xclang -add-plugin -Xclang clan -Xclang -plugin-arg-clan -Xclang"
 
 OMP_FIXER_FLAGS="$PLUGIN_FLAGS -emit-openmp"
 FIXIT_FLAGS="-Xclang -fixit=opt"
@@ -23,7 +23,7 @@ OMP_FIXIT_COMMAND="$FIXIT_COMPILER $OMP_FIXER_FLAGS $FIXIT_COMPILER_FLAGS $FIXIT
 
 echo running $OMP_FIXIT_COMMAND 
 
-$OMP_FIXIT_COMMAND &> plugin.out
+$OMP_FIXIT_COMMAND 
 
 if [[ $? -ne 0 ]]; then
   echo "error optimizing main.cpp"
