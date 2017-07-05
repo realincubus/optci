@@ -11,6 +11,10 @@ echo "convert the perf data to hotspots.txt"
 
 # TODO this needs to be infered somehow
 PLUGIN_PATH=/root/ClanPlugin/lib/ClanPlugin.so 
+export LD_LIBRARY_PATH=/root/pluto_install/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/root/pet_install/lib:$LD_LIBRARY_PATH
+
+ldd $PLUGIN_PATH > ldd.res
 
 FIXIT_COMPILER=clang
 FIXIT_COMPILER_FLAGS="-std=c++14 -g -fsyntax-only"
