@@ -29,9 +29,11 @@ int main(int argc, char** argv){
 
   while( iterations-- ) {
     for ( int y = 0; y < Y; y++ ){
+      double sum = 0;
       for ( int x = 0; x < X; x++ ) { 
-        targetVector[y] += matrix[x+y*X] * inputVector[x];
+        sum += matrix[x+y*X] * inputVector[x];
       }   
+      targetVector[y] = sum;
     }   
   }
 
