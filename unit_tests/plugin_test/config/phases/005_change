@@ -4,7 +4,7 @@ echo "change the code here"
 
 # TODO this needs to be infered somehow
 PLUGIN_PATH=/root/ClanPlugin/lib/ClanPlugin.so 
-export LD_LIBRARY_PATH=$HOME/install/lib/:$LD_LIBRARY_PATH
+export PATH=$HOME/install/bin/:$PATH
 export LD_LIBRARY_PATH=/root/pet_install/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=/root/pluto_install/lib:$LD_LIBRARY_PATH
 
