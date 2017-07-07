@@ -22,5 +22,5 @@ if [[ $EMIT_TYPE == "-emit-tbb" ]]; then
 fi
 
 if [[ $EMIT_TYPE == "-emit-hpx" ]]; then
-  cmake -DCMAKE_CXX_STANDARD_LIBRARIES="-lhpx /usr/local/lib/libhpx_init.a -lboost_chrono -lboost_date_time -lboost_filesystem -lboost_program_options -lboost_regex -lboost_system -lboost_thread -lpthread -lboost_context -lboost_random -lboost_atomic" .
+  cmake -DCMAKE_CXX_STANDARD_LIBRARIES="-lhpx /usr/lib/libhpx_init.a -lboost_chrono -lboost_date_time -lboost_filesystem -lboost_program_options -lboost_regex -lboost_system -lboost_thread -lpthread -lboost_context -lboost_random -lboost_atomic" .
 fi
