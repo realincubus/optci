@@ -1,0 +1,27 @@
+#!/bin/bash
+
+EXTRA_ARGS=""
+if [[ $EMIT_TYPE == "-emit-hpx" ]]; then
+  THREADS_TO_RUN=$(echo " $SOCKETS * $CORES_PER_SOCKET * $THREADS_PER_CORE" | bc )
+  EXTRA_ARGS="--hpx:threads=$THREADS_TO_RUN"
+fi
+
+PERF_COMMAND=""
+if [[ $EMIT_TYPE == "no-change" ]]; then
+  PERF_COMMAND="perf record -F 99 -g"
+fi
+
+echo "EXTRA ARGS: $EXTRA_ARGS"
+
+OPTCI_PREPARE
+time="$(OPTCI_PIN_RUN $PERF_COMMAND ./bin_matrix_multiply_example $SIZE $ITERATIONS $EXTRA_ARGS)"
+OPTCI_CLEANUP
+
+bin_ra << EOF | tee -a $RESULTS_OUT
+SOCKETS=$SOCKETS
+CORES_PER_SOCKET=$CORES_PER_SOCKET
+THREADS_PER_CORE=$THREADS_PER_CORE
+TYPE=$EMIT_TYPE
+TIME=$time
+EOF
+

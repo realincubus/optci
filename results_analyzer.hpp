@@ -2,6 +2,7 @@
 #pragma once
 #include <yaml-cpp/yaml.h>
 #include <string>
+#include <iostream>
 
 #include "Trilean.hpp"
 

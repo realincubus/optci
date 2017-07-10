@@ -59,7 +59,7 @@ auto get_name_and_value( NodeRef axis ) {
   return std::make_tuple( axis_name, axis_value );
 }
 
-bool is_axis_value_different_in( NodeRef config_b, std::string axis_name, std::string axis_value, std::string minimize_axis = "TIME" )
+bool is_axis_value_different_in( NodeRef config_b, std::string axis_name, std::string axis_value, std::string minimize_axis )
 {
   bool is_difference = false;
 
@@ -102,7 +102,7 @@ auto get_axis_value( NodeRef axis ) {
 using XYPair = std::pair<std::string,std::string>;
 using ConfigMap = std::map<AxisConfiguration,std::set<XYPair>>; 
 
-AxisConfiguration make_axis_configuration( NodeRef config, NodeRef base_axis, std::string minimize_axis = "TIME" ) {
+AxisConfiguration make_axis_configuration( NodeRef config, NodeRef base_axis, std::string minimize_axis ) {
   using namespace std;
   auto [ name, value ] = get_name_and_value(base_axis);
 
@@ -118,7 +118,7 @@ AxisConfiguration make_axis_configuration( NodeRef config, NodeRef base_axis, st
   return ret;
 }
 
-void compare_configs( NodeRef config_a, NodeRef config_b, ConfigMap& possible_configs, std::string minimize_axis = "TIME" ) {
+void compare_configs( NodeRef config_a, NodeRef config_b, ConfigMap& possible_configs, std::string minimize_axis ) {
   //std::cout << "comparing configs "  << std::endl; 
   for_each_axis( config_a, [&](NodeRef axis){ 
 
@@ -135,7 +135,7 @@ void compare_configs( NodeRef config_a, NodeRef config_b, ConfigMap& possible_co
       auto axis_a_name_and_value = get_name_and_value( other_axis );
       auto axis_a_name = std::get<0>(axis_a_name_and_value);
       auto axis_a_value = std::get<1>(axis_a_name_and_value);
-      if (is_axis_value_different_in( config_b, axis_a_name, axis_a_value ) ){
+      if (is_axis_value_different_in( config_b, axis_a_name, axis_a_value, minimize_axis ) ){
         //std::cout << "  differs " << axis_a_name << " in other conf " << std::endl;
         is_difference = true;
       }
@@ -153,11 +153,11 @@ void compare_configs( NodeRef config_a, NodeRef config_b, ConfigMap& possible_co
 
       std::string axis_a_time_value;
       std::string axis_b_time_value;
-      for_each_axis_named( config_a, "TIME", [&](NodeRef axis){ 
+      for_each_axis_named( config_a, minimize_axis, [&](NodeRef axis){ 
         axis_a_time_value = get_axis_value( axis ); 
       });
 
-      for_each_axis_named( config_b, "TIME", [&](NodeRef axis){ 
+      for_each_axis_named( config_b, minimize_axis, [&](NodeRef axis){ 
         axis_b_time_value = get_axis_value( axis ); 
       });
 
@@ -166,7 +166,7 @@ void compare_configs( NodeRef config_a, NodeRef config_b, ConfigMap& possible_co
         axis_b_value = get_axis_value( axis ); 
       });
 
-      auto axis_configuration = make_axis_configuration( config_a, axis );
+      auto axis_configuration = make_axis_configuration( config_a, axis, minimize_axis );
       possible_configs[axis_configuration].emplace( axis_a_value, axis_a_time_value ); 
       //}
     }
@@ -267,7 +267,7 @@ std::vector<AxisAnalysisResult> analyze_configuration_matrix( YAML::Node root, s
   for_each_configuration( root, [&]( const YAML::Node& config_a){
     for_each_configuration( root, [&]( const YAML::Node& config_b){
       if ( config_a.is( config_b ) ) return;
-      compare_configs( config_a, config_b, possible_configs );
+      compare_configs( config_a, config_b, possible_configs, target_axis );
     });
   });
 
@@ -305,7 +305,7 @@ std::vector<AxisAnalysisResult> analyze_configuration_matrix( YAML::Node root, s
 int get_dimensionality( AnalysisResult& result ){
   if ( !result.empty() ) {
     auto& first = result.front();
-    return first.configuration.manifestation.size();
+    return first.configuration.manifestation.size()+1;
   }else{
     return -1;
   }
@@ -317,6 +317,35 @@ void for_each_node_bottom_up( ASTNode* n, std::function<void(ASTNode*)> f ){
     for_each_node_bottom_up( child, f );
   }
   f(n); 
+}
+
+void generate_multidimensional_dense_array_no_ast( MultiDArray<double>& mda, int dimensionality, AnalysisResult& results) {
+  std::cout << __PRETTY_FUNCTION__ << std::endl;
+  
+  for( auto& result : results ){
+
+    MultiDArray<double>::address_t addr;
+    addr.resize(dimensionality);
+    int ctr = 1;
+    for( auto& element : result.configuration.manifestation ){
+      int addr_e = stoi(element.second);
+      addr[ctr++] = addr_e - 1;
+    }
+
+    for( auto& config : result.sorted_configs ){
+      auto addr_copy = addr;
+      addr_copy[0] = stoi(config.first) - 1;
+      mda.set_value( addr_copy, stod(config.second) );
+      std::cout << "addr " << 
+        addr_copy[0] << " " <<  
+        addr_copy[1] << " " << 
+        addr_copy[2] << " " <<
+        stod(config.second) << " " <<
+        std::endl;
+    }
+
+  }
+  std::cout << "leaving " <<__PRETTY_FUNCTION__ << std::endl;
 }
 
 MultiDArray<double> generate_multidimensional_dense_array( AnalysisResult& result, ASTNode* ast) {
@@ -334,7 +363,7 @@ MultiDArray<double> generate_multidimensional_dense_array( AnalysisResult& resul
   std::fill( begin(extents), end(extents), std::numeric_limits<int>::min() );
 
   for( auto& axis_result : result ){
-    int ctr = 0;
+    int ctr = 1;
 
     for( auto& element : axis_result.configuration.manifestation ){
       int addr = stoi(element.second);
@@ -343,9 +372,26 @@ MultiDArray<double> generate_multidimensional_dense_array( AnalysisResult& resul
       }
       ctr++;
     }
+
+    int vals = axis_result.sorted_configs.size();
+    if ( vals  > extents[0] ) {
+      extents[0] = vals;
+    }
   }
 
+
+  std::cout << "extents ";
+  for (int i = 0; i < extents.size(); ++i){
+     std::cout << extents[i] << " " ; 
+  }
+  std::cout << std::endl;
+
   mda.extents( extents );
+
+  if ( ast == nullptr ) {
+    generate_multidimensional_dense_array_no_ast( mda, dimensionality, result );
+    return mda;
+  }
 
   // apply the AST to the results and store the result in the MultiDMatrix
   
@@ -416,12 +462,9 @@ int compare_data( NodeRef root, const Options& options ){
 
     auto results = analyze_configuration_matrix( root, options.target_axis, filter );
 
-    handle_results(results);
+    //handle_results(results);
 
     auto mda = generate_multidimensional_dense_array( results, ast );
-    if ( options.plot_file != "" ) {
-      generate_gnuplot_matrix_plot( mda );
-    } 
 
     if ( options.greater != "" ) {
       auto max = mda.max();
@@ -491,11 +534,17 @@ int main(int argc, char** argv){
 
   if ( options.filter != "" ) {
     auto results = analyze_configuration_matrix( root, options.target_axis, options.filter );
-
     handle_results( results );
+
+    if ( options.plot_file != "" ) {
+      auto mda = generate_multidimensional_dense_array( results, nullptr );
+      cout << mda.max() << endl;
+      generate_gnuplot_matrix_plot( mda );
+    }
     return 0;
 
   }
+
 
   return 0;
 }

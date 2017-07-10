@@ -1,0 +1,44 @@
+#!/bin/bash -x
+
+echo "change the code here"
+
+if [[ $EMIT_TYPE == "no-change" ]]; then
+  exit 0
+fi
+
+ln -fs  perf.data.base perf.data
+perf annotate --stdio -l -P -d bin_matrix_multiply_example > perf.base.txt
+/root/optci/bin_perf_data_converter perf.base.txt
+
+
+# TODO this needs to be infered somehow
+PLUGIN_PATH=/root/ClanPlugin/lib/ClanPlugin.so 
+export LD_LIBRARY_PATH=/root/pluto_install/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/root/pet_install/lib:$LD_LIBRARY_PATH
+
+ldd $PLUGIN_PATH
+
+FIXIT_COMPILER=clang
+HOTSPOT_FLAGS="-Xclang -plugin-arg-clan -Xclang -profiling-data -Xclang -plugin-arg-clan -Xclang hotspots.out"
+FIXIT_COMPILER_FLAGS="-std=c++14 -g -fsyntax-only"
+PLUGIN_FLAGS="$FIXIT_COMPILER_FLAGS -Xclang -load -Xclang $PLUGIN_PATH -Xclang -add-plugin -Xclang clan $HOTSPOT_FLAGS -Xclang -plugin-arg-clan -Xclang -redirect-stdout -Xclang -plugin-arg-clan -Xclang plugin.log -Xclang -plugin-arg-clan -Xclang -redirect-stderr -Xclang -plugin-arg-clan -Xclang plugin.log -Xclang -plugin-arg-clan -Xclang"
+
+FIXER_FLAGS="$PLUGIN_FLAGS $EMIT_TYPE"
+FIXIT_FLAGS="-Xclang -fixit=opt"
+
+SOURCE=main.cpp
+
+OMP_FIXIT_COMMAND="$FIXIT_COMPILER $FIXER_FLAGS $FIXIT_COMPILER_FLAGS $FIXIT_FLAGS -c $SOURCE"
+
+echo running $OMP_FIXIT_COMMAND 
+
+$OMP_FIXIT_COMMAND &> plugin.out
+
+if [[ $? -ne 0 ]]; then
+  echo "error optimizing main.cpp"
+fi
+
+# TODO right now it creates main.opt.cpp. change to directly overwrite the original
+mv main.cpp main.orignal.cpp
+mv main.opt.cpp main.cpp
+

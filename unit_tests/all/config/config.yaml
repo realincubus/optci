@@ -1,0 +1,6 @@
+- scaling_phases: [ "config/phases/002_all" ]
+  matrix:
+    - name: "EMIT_TYPE"
+      values: [ "no-change", "-emit-hpx", "-emit-tbb", "-emit-openmp", "-emit-cilk", "-emit-openacc", ]
+- scaling_phases: [ "config/phases/002_all/005_run" ]
+  matrix: auto
