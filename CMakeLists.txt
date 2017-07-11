@@ -24,17 +24,17 @@ ADD_EXECUTABLE( bin_perf_data_converter pdc_main.cpp)
 
 TARGET_LINK_LIBRARIES( bin_perf_data_converter stdc++fs )
 
-ADD_EXECUTABLE( bin_ra results_accumulator.cpp  results_analyzer.cpp result_analysis_parser.cpp result_analysis_plot.cpp )
-TARGET_LINK_LIBRARIES( bin_ra yaml-cpp )
+#ADD_EXECUTABLE( bin_ra results_accumulator.cpp  results_analyzer.cpp result_analysis_parser.cpp result_analysis_plot.cpp )
+#TARGET_LINK_LIBRARIES( bin_ra yaml-cpp )
 
 # RESULT ANALYSIS
-ADD_EXECUTABLE( bin_rana results_analyzer.cpp result_analysis_parser.cpp result_analysis_plot.cpp )
+ADD_EXECUTABLE( bin_rana results_accumulator.cpp results_analyzer.cpp result_analysis_parser.cpp result_analysis_plot.cpp )
 TARGET_LINK_LIBRARIES( bin_rana yaml-cpp )
 set_target_properties( bin_rana PROPERTIES COMPILE_FLAGS "-DBUILDING_EXE=1")
 
-ADD_LIBRARY( ra SHARED results_accumulator.cpp results_analyzer.cpp result_analysis_parser.cpp result_analysis_plot.cpp )
-TARGET_LINK_LIBRARIES( ra yaml-cpp )
-set_target_properties( ra PROPERTIES COMPILE_FLAGS "-DBUILDING_LIB=1")
+ADD_LIBRARY( rana SHARED results_accumulator.cpp results_analyzer.cpp result_analysis_parser.cpp result_analysis_plot.cpp )
+TARGET_LINK_LIBRARIES( rana yaml-cpp )
+set_target_properties( rana PROPERTIES COMPILE_FLAGS "-DBUILDING_LIB=1")
 
 
 ADD_LIBRARY(optci SHARED ${SOURCES})

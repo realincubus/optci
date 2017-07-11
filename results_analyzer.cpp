@@ -5,6 +5,7 @@
 #include "result_analysis_parser.hpp"
 #include "function_analysis.hpp"
 #include "result_analysis_plot.hpp"
+#include "results_accumulator.hpp"
 
 #include <iostream>
 #include <functional>
@@ -230,12 +231,11 @@ void do_axis_analysis ( AxisAnalysisResult& analysis_result ){
 
 void AxisAnalysisResult::report ( std::ostream& out ){
 
-  std::cout << "for axis: " << configuration << std::endl;
+  std::cout << "= " << configuration << " =" << std::endl;
   for( auto& config : sorted_configs ){
     auto& [a,b] = config;
-    std::cout << a << " " << b << std::endl;    
+    std::cout << "| " << a << " | " << b << " |" << std::endl;    
   }
-  std::cout << "---" << std::endl;
 
   if ( no_change ) {
     // TODO refactor out 
@@ -483,6 +483,7 @@ int compare_data( NodeRef root, const Options& options ){
   return 0;
 }
 
+
 #if BUILDING_EXE 
 int main(int argc, char** argv){
 
@@ -491,7 +492,7 @@ int main(int argc, char** argv){
   Options options;
   
   // parse all switches
-  while ( int opt = getopt(argc, argv, "i:t:f:c:p:g:") ){
+  while ( int opt = getopt(argc, argv, "i:t:f:c:p:g:a") ){
     if ( opt == -1 ) break;
     switch(opt) {
       case 'i':{
@@ -518,12 +519,25 @@ int main(int argc, char** argv){
           options.greater = optarg;
           break;
       }
+      case 'a' :{
+          options.accumulate = true;
+          break;
+      }
       default:{
           fprintf(stderr, "Usage: %s \n",argv[0]);
           exit(EXIT_FAILURE);
       }
     }
   }
+
+  if ( options.accumulate ) {
+    std::istream* in_file = &std::cin;
+    auto root = build_yaml_root();
+    root = add_yaml_configuration_from_stream(root, *in_file );
+    write_yaml_tree( root, std::cout );
+    return EXIT_SUCCESS;
+  }
+
   
   YAML::Node root = YAML::LoadFile(options.input_file);
 

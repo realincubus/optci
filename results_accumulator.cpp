@@ -56,6 +56,8 @@ void write_yaml_tree( Node root, std::ostream& out ) {
   out << emitter.c_str() << std::endl;
 }
 
+
+#if 0
 // TODO lets write a program that takes some variables and converts them 
 // into a yaml file 
 #if BUILDING_LIB
@@ -78,3 +80,5 @@ int main(int argc, char** argv){
 
   return 0;
 }
+
+#endif

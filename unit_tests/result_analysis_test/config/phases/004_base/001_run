@@ -5,7 +5,7 @@ COMMAND="./bin_matrix_multiply_example $SIZE $ITERATIONS"
 
 time="$(OPTCI_PIN_RUN $COMMAND)"
 
-bin_ra << EOF | tee -a $RESULTS_OUT
+bin_rana -a << EOF | tee -a $RESULTS_OUT
 SOCKETS=$SOCKETS 
 CORES_PER_SOCKET=$CORES_PER_SOCKET 
 THREADS_PER_CORE=$THREADS_PER_CORE

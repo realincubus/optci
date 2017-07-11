@@ -9,7 +9,7 @@ fi
 echo "EXTRA ARGS: $EXTRA_ARGS"
 time="$(OPTCI_PIN_RUN ./bin_matrix_multiply_example $SIZE $ITERATIONS $EXTRA_ARGS)"
 
-bin_ra << EOF | tee -a $RESULTS_OUT
+bin_rana -a << EOF | tee -a $RESULTS_OUT
 SOCKETS=$SOCKETS
 CORES_PER_SOCKET=$CORES_PER_SOCKET
 THREADS_PER_CORE=$THREADS_PER_CORE

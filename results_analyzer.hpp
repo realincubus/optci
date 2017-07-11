@@ -147,6 +147,7 @@ struct Options {
   std::string plot_file = "";
   // TODO remove after new syntax was introduced for c flag
   std::string greater = "";
+  bool accumulate = false;
 };
 
 int compare_data( NodeRef root, const Options& options );
