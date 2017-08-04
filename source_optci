@@ -77,6 +77,8 @@ function check_system_load {
 
   idle_ok="0"
   while [[ $idle_ok == "0" ]]; do
+
+    idle=$(mpstat 2 1 | tail -n 1 | awk  '{print $NF}')
     idle_ok=$(echo $idle'>='$min_idle | bc -l)
     if [[ $idle_ok == "0" ]]; then
       warning "waiting till idle ($idle) increases to $min_idle"
