@@ -10,6 +10,7 @@
 #include <iostream>
 #include <functional>
 #include <regex>
+#include <getopt.h>
 #include <fstream>
 
 using namespace std;

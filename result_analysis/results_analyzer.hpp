@@ -3,6 +3,7 @@
 #include <yaml-cpp/yaml.h>
 #include <string>
 #include <iostream>
+#include <functional>
 
 #include "Trilean.hpp"
 
