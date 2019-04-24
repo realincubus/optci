@@ -60,6 +60,9 @@ int main(int argc, char** argv)
 
   std::vector<std::string> paths;
   paths.push_back(g_base_dir.string() + "source_optci");
+
+  g_max_phases = root.count_runnable_phases() + 1 ;
+
   root.execute(paths);
 
 

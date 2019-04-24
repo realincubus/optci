@@ -13,6 +13,8 @@
 extern std::experimental::filesystem::path g_base_dir;
 extern std::string g_files_folder;
 extern std::string g_config_file;
+extern int g_phase_id;
+extern int g_max_phases;
 
 struct Phase {
   Phase( std::string phase_name ); 

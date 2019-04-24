@@ -5,6 +5,9 @@
 
 using namespace std;
 
+int g_phase_id = 1;
+int g_max_phases;
+
 Phase::Phase( std::string phase_name ) :
     name(phase_name ) 
 {
@@ -25,7 +28,7 @@ void Phase::print(int indent) {
 
 void 
 Phase::execute(std::vector<std::string>& paths ){
-  std::cout << this->get_name() << " running" << std::endl;
+  std::cout << "Step " << g_phase_id++ << " " << this->get_name() << " running" << std::endl;
   build_configuration();
   print();
 
@@ -125,7 +128,9 @@ void Phase::run_in_pipe( std::string command, std::ostream& to ) {
 void Phase::run_command( std::vector<std::string>& paths, std::string command ) {
   using namespace std;
 
-  std::cout << "----> " << this->get_name() << " running" << std::endl;
+  std::cout << std::endl;
+  std::cout << "Step " << g_phase_id++ << "/" << g_max_phases  << " : " << this->get_name()  << std::endl;
+  std::cout << std::endl;
 #if 0
   if ( matrix ) {
     matrix->for_each_configuration( [&](auto configuration){ 
