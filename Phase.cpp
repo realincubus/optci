@@ -236,7 +236,16 @@ void Phase::config_merge( Configuration& other_config ){
 int 
 Phase::count_runnable_phases(){
   if ( sub_phases.empty() ) {
-    return 1;
+    if ( has_matrix_var ){
+      int configurations = 0;
+      matrix.for_each_configuration( [&](auto c){ 
+          configurations++;
+        }
+      );
+      return configurations;
+    }else{
+      return 1;
+    }
   }else{
     int sum = 0;
     for( auto&& phase : sub_phases ){
