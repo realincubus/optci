@@ -159,6 +159,11 @@ export -f check_disk_load
 
 function disable_turbo_boost {
   echo "disabling turbo boost"
+  if [ -e /opt/cpu_speed_control-0.0.1/turbo_disable ]; then
+    sudo /opt/cpu_speed_control-0.0.1/turbo_disable
+    return
+  fi
+
   # check for intel_pstate
   if [[ ! -e /sys/devices/system/cpu/intel_pstate/no_turbo ]]; then
     echo "can not disable turbo boost"
@@ -171,6 +176,10 @@ export -f disable_turbo_boost
 
 function enable_turbo_boost {
   echo "enabling turbo boost"
+  if [ -e /opt/cpu_speed_control-0.0.1/turbo_enable ]; then
+    sudo /opt/cpu_speed_control-0.0.1/turbo_enable
+    return
+  fi
   # check for intel_pstate
   if [[ ! -e /sys/devices/system/cpu/intel_pstate/no_turbo ]]; then
     echo "can not enable turbo boost"
@@ -181,18 +190,26 @@ function enable_turbo_boost {
 export -f enable_turbo_boost
 
 function clear_memory {
-  echo "clearing memory not implemented right now"
-
+  echo "clearing memory"
+  likwid-memsweeper
 }
 export -f clear_memory
 
 function drop_caches {
+  if [ -e /opt/cpu_speed_control-0.0.1/drop_caches ]; then
+    sudo /opt/cpu_speed_control-0.0.1/drop_caches
+    return
+  fi
   echo 3 > /proc/sys/vm/drop_caches 
 }
 
 export -f drop_caches
 
 function governor_set_performance {
+  if [ -e /opt/cpu_speed_control-0.0.1/governor_set_performance ]; then
+    sudo /opt/cpu_speed_control-0.0.1/governor_set_performance
+    return
+  fi
   cpupower frequency-set -g performance > /dev/null
 }
 
@@ -218,13 +235,16 @@ function restore_cpu_frequency {
 export -f restore_cpu_frequency
 
 function governor_set_powersave {
+  if [ -e /opt/cpu_speed_control-0.0.1/governor_set_powersave ]; then
+    sudo /opt/cpu_speed_control-0.0.1/governor_set_powersave
+    return
+  fi
   cpupower frequency-set -g powersave > /dev/null
 }
 
 export -f governor_set_powersave
 
 function OPTCI_PREPARE {
-
   clear_memory
   disable_turbo_boost
   governor_set_performance
