@@ -1,0 +1,4 @@
+#!/bin/bash  -xe
+cp -r $FILES/optci_example_matrix optci_example_matrix
+
+echo 'export CHECKOUT_FOLDER=optci_example_matrix' > $ARTIFACT/a1

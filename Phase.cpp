@@ -92,7 +92,7 @@ Phase::parse_artifacts(std::vector<std::string>& paths, std::string folder){
         paths.push_back( p.path() );
         std::cout << "added " << p << " to the list of files to source" << std::endl;
       }else{
-        std::cout << "already in list" << std::endl;
+        //std::cout << "already in list" << std::endl;
       }
     }
   }

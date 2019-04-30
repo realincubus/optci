@@ -1,0 +1,3 @@
+#!/bin/bash
+
+clang-tidy -fix -checks='-*,modernize-use-emplace' main.cpp
